@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                 while (true) {
                     if (!task1.isAlive) {
                         var index = 0
-                        while (!(index == songNames.size)) {
+                        while (index != songNames.size) {
                             println("Hello")
                             module.callAttr(
                                 "DownloadSongs",
@@ -81,27 +81,8 @@ class MainActivity : AppCompatActivity() {
                                 songURLS[index],
                                 createDirectory("KOSTAS")
                             )
-
-
-
-
-
                             index++
                         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                         break
                     }
 
@@ -127,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 private fun createDirectory(subfoldername: String): String {
     val newFolder = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-        "$subfoldername"
+        subfoldername
     )
     return newFolder.toString()
 
