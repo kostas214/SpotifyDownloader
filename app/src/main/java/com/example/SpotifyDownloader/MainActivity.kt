@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
+
         binding.perms.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 ActivityCompat.requestPermissions(
@@ -59,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             val task1 = Thread {
                 val data = module.callAttr(
                     "songSearchSpotify",
-                    binding.editTextTextPersonName.text.toString()
+                    binding.PlaylistLinkEditText.text.toString()
                 ).asList().toList()
                 songNames = data[0].asList()
                 songURLS = data[1].asList()
