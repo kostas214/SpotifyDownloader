@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Spotify Downloader</string>
-    <string name="textfield_label">Playlist LInk</string>
-    <string name="PlaylistLInk">PlaylistLInk</string>
+    <string name="textfield_label">Playlist Link</string>
+    <string name="PlaylistLInk">Playlist Link</string>
     <string name="permissions">Permissions</string>
     <string name="download">Download</string>
     <string name="StoragePermission">Give permission to access storage</string>
