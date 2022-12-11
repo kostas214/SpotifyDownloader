@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">Spotify Downloader</string>
     <string name="textfield_label">Playlist LInk</string>
+    <string name="PlaylistLInk">PlaylistLInk</string>
+    <string name="permissions">Permissions</string>
+    <string name="download">Download</string>
+    <string name="StoragePermission">Give permission to access storage</string>
+    <string name="playlistLInk">Insert a Spotify playlist share link</string>
+    <string name="downloadPlaylist">Press Download to download the whole playlist</string>
+    <string name="storageIcon">Storage Icon</string>
+    <string name="shareIcon">Share Icon</string>
+    <string name="arrowIcon">Arrow Icon</string>
 </resources>
