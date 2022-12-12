@@ -5,16 +5,17 @@ import uyts
 import string
 import music_tag
 import requests
+import SpotifyApiCredentials
+
 
 
 
 
 def songSearchSpotify(playlistLink):
     #Initialize Spotipy
-    SPOTIPY_CLIENT_ID = "69b85ad4ba7d4efb9265321b98a775fd"
-    SPOTIPY_CLIENT_SECRET = "247f5c4dd5334e94a2aa7b67c1a53366"
-    sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID,
-                                                                             client_secret=SPOTIPY_CLIENT_SECRET,
+
+    sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
+                                                                             client_secret=SpotifyApiCredentials.SPOTIPY_CLIENT_SECRET,
                                                                              ))
 
     #Store the songs of the playlist in a list
@@ -42,10 +43,9 @@ def songSearchSpotify(playlistLink):
 
 
 def DownloadSongs(songs,links,filePath):
-    SPOTIPY_CLIENT_ID = "69b85ad4ba7d4efb9265321b98a775fd"
-    SPOTIPY_CLIENT_SECRET = "247f5c4dd5334e94a2aa7b67c1a53366"
-    sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID,
-                                                                             client_secret=SPOTIPY_CLIENT_SECRET,
+
+    sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
+                                                                             client_secret=SpotifyApiCredentials.SPOTIPY_CLIENT_SECRET,
                                                                              ))
     songId = uyts.Search(songs)
     result = "https://www.youtube.com/watch?v=" + songId.results[0].id
