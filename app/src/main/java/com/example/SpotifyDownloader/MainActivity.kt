@@ -56,7 +56,9 @@ class MainActivity : AppCompatActivity() {
 
 
         }
+
         binding.download2.setOnClickListener {
+            val saveDirectory = createDirectory("KOSTAS")
 
             val task1 = Thread {
                 val data = module.callAttr(
@@ -70,20 +72,31 @@ class MainActivity : AppCompatActivity() {
             //delay(100)
 
 
+
+
+
+
+
+
             GlobalScope.launch {
                 task1.start()
+
                 while (true) {
                     if (!task1.isAlive) {
                         var index = 0
+                        binding.progressBar.max = songNames.size
                         while (index != songNames.size) {
+
                             println("Hello")
                             module.callAttr(
                                 "DownloadSongs",
                                 songNames[index],
                                 songURLS[index],
-                                createDirectory("KOSTAS")
-                            )
+                                saveDirectory
+                                )
+
                             index++
+                            binding.progressBar.incrementProgressBy(1)
                         }
                         break
                     }

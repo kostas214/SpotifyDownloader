@@ -10,4 +10,5 @@
     <string name="storageIcon">Storage Icon</string>
     <string name="shareIcon">Share Icon</string>
     <string name="arrowIcon">Arrow Icon</string>
+    <string name="progress_bar">Progress bar</string>
 </resources>
