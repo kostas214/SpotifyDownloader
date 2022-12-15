@@ -96,6 +96,7 @@ class MainActivity : AppCompatActivity() {
                                 )
 
                             index++
+                            println(index)
                             binding.progressBar.incrementProgressBy(1)
                         }
                         break
