@@ -6,17 +6,17 @@ import string
 import music_tag
 import requests
 import SpotifyApiCredentials
+import time
 
 
+sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
+                                                                         client_secret=SpotifyApiCredentials.SPOTIPY_CLIENT_SECRET,
+                                                                         ))
 
-
-
+Failed = []
 def songSearchSpotify(playlistLink):
     #Initialize Spotipy
 
-    sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
-                                                                             client_secret=SpotifyApiCredentials.SPOTIPY_CLIENT_SECRET,
-                                                                             ))
 
     #Store the songs of the playlist in a list
     done = True
@@ -32,6 +32,7 @@ def songSearchSpotify(playlistLink):
             tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
             for key in tracks['items']:
                 songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
+                #links.append(key['track']['external_urls']['spotify'])
             offset += 100
         if len(songs) < offset + 100:
             done = False
@@ -44,9 +45,7 @@ def songSearchSpotify(playlistLink):
 
 def DownloadSongs(songs,links,filePath):
 
-    sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
-                                                                             client_secret=SpotifyApiCredentials.SPOTIPY_CLIENT_SECRET,
-                                                                             ))
+
     songId = uyts.Search(songs)
     result = "https://www.youtube.com/watch?v=" + songId.results[0].id
     translation_table = str.maketrans('', '', string.punctuation)
@@ -67,9 +66,21 @@ def DownloadSongs(songs,links,filePath):
 
     response = requests.get(ArtWorkURL)
 
+
+    st = time.time()
+
     yt = YouTube(result)
     ys = yt.streams.get_audio_only()
-    ys.download(filePath, filename=fileName, timeout=30)
+    ys.download(filePath, filename=fileName, skip_existing=False)
+
+
+
+    et = time.time()
+    elapsed_time = et - st
+    if elapsed_time>60:
+        Failed.append(songs)
+    print(f'Execution time: {elapsed_time} seconds')
+    print(f"Downloads Failed {Failed}, Lenght of array  {len(Failed)}")
 
 
 
@@ -90,6 +101,8 @@ def DownloadSongs(songs,links,filePath):
     f['tracktitle'] = trackName
     f['year'] = releaseDate
     f.save()
+
+
 
 
 

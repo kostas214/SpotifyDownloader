@@ -87,7 +87,6 @@ class MainActivity : AppCompatActivity() {
                         binding.progressBar.max = songNames.size
                         while (index != songNames.size) {
 
-                            println("Hello")
                             module.callAttr(
                                 "DownloadSongs",
                                 songNames[index],

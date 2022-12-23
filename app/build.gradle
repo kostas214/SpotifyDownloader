@@ -24,7 +24,7 @@ android {
 
         python {
             pip {
-                install "pytube==12.1.0"
+                install "pytube==12.1.2"
                 install "spotipy"
                 install "unlimited-youtube-search"
                 install "flask"
