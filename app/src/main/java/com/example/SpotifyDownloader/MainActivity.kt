@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.chaquo.python.PyObject
@@ -16,10 +17,13 @@ import com.example.SpotifyDownloader.databinding.ActivityMainBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.concurrent.Executors
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -35,12 +39,6 @@ class MainActivity : AppCompatActivity() {
         var songNames = listOf<PyObject>()
         var songURLS = listOf<PyObject>()
 
-
-
-
-
-
-
         binding.perms.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 ActivityCompat.requestPermissions(
@@ -54,7 +52,6 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
 
-
         }
 
         binding.download2.setOnClickListener {
@@ -67,59 +64,55 @@ class MainActivity : AppCompatActivity() {
                 ).asList().toList()
                 songNames = data[0].asList()
                 songURLS = data[1].asList()
+                binding.progressBar.max = songNames.size
+                println("got data")
 
             }
-            //delay(100)
-
-
-
-
-
-
-
-
+            task1.start()
+            println("task1.start()")
             GlobalScope.launch {
-                task1.start()
 
-                while (true) {
-                    if (!task1.isAlive) {
-                        var index = 0
-                        binding.progressBar.max = songNames.size
-                        while (index != songNames.size) {
 
-                            module.callAttr(
-                                "DownloadSongs",
-                                songNames[index],
-                                songURLS[index],
-                                saveDirectory
+                var run = true
+                println("val isRunning = task1.isAlive")
+                while (run) {
+                    val isRunning = task1.isAlive
+                    println("while (true){")
+                    if (!isRunning) {
+                        println("Starting download")
+                        val executor = Executors.newFixedThreadPool(4)
+
+                        for (i in songNames) {
+                            println(i)
+                            var index = 0
+                            val worker = Runnable {
+                                module.callAttr(
+                                    "DownloadSongs",
+                                    i,
+                                    songURLS[index],
+                                    saveDirectory, index
                                 )
+                                println("Downloading $i")
 
-                            index++
-                            println(index)
-                            binding.progressBar.incrementProgressBy(1)
+                                binding.progressBar.incrementProgressBy(1)
+                                println(index)
+                                index++
+                            }
+                            executor.execute(worker)
+
+
                         }
-                        break
+                        executor.shutdown()
+                        run = false
                     }
 
                 }
-                println("End")
+
 
             }
-
-
-            //println(songURLS)
-            //println(songURLS)
-
-
         }
-
-
     }
-
-
 }
-
-
 private fun createDirectory(subfoldername: String): String {
     val newFolder = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
