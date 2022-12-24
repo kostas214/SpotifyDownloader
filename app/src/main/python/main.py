@@ -43,7 +43,8 @@ def songSearchSpotify(playlistLink):
 
 
 
-def DownloadSongs(songs,links,filePath):
+def DownloadSongs(songs,links,filePath,index):
+    print("hello")
 
 
     songId = uyts.Search(songs)
@@ -71,16 +72,16 @@ def DownloadSongs(songs,links,filePath):
 
     yt = YouTube(result)
     ys = yt.streams.get_audio_only()
-    ys.download(filePath, filename=fileName, skip_existing=False)
+    ys.download(filePath, filename=fileName,timeout = 30,skip_existing=False)
 
 
 
     et = time.time()
     elapsed_time = et - st
-    if elapsed_time>60:
+    if elapsed_time>30:
         Failed.append(songs)
     print(f'Execution time: {elapsed_time} seconds')
-    print(f"Downloads Failed {Failed}, Lenght of array  {len(Failed)}")
+    print(f"Downloads Failed {Failed}, Lenght of array  {len(Failed)} fail rate is {(len(Failed)*100)/(index+1)} %")
 
 
 
