@@ -22,6 +22,7 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity() {
                 ).asList().toList()
                 songNames = data[0].asList()
                 songURLS = data[1].asList()
-                binding.progressBar.max=songNames.size
+                binding.progressBar.max = songNames.size
                 println("got data")
 
             }
@@ -81,50 +82,41 @@ class MainActivity : AppCompatActivity() {
 
                 var run = true
                 println("val isRunning = task1.isAlive")
-                while (run){
+                while (run) {
                     val isRunning = task1.isAlive
                     println("while (true){")
-                if (!isRunning){
-                    println("Starting download")
-                    val executor = Executors.newFixedThreadPool(8)
+                    if (!isRunning) {
+                        println("Starting download")
+                        val executor = Executors.newFixedThreadPool(4)
 
-                    for (i in songNames){
-                        println(i)
-                        var index = 0
-                        val worker = Runnable {
-                            module.callAttr(
-                                "DownloadSongs",
-                                i,
-                                songURLS[index],
-                                saveDirectory,index
-                            )
-                            println("Downloading $i")
+                        for (i in songNames) {
+                            println(i)
+                            var index = 0
+                            val worker = Runnable {
+                                module.callAttr(
+                                    "DownloadSongs",
+                                    i,
+                                    songURLS[index],
+                                    saveDirectory, index
+                                )
+                                println("Downloading $i")
 
-                            binding.progressBar.incrementProgressBy(1)
-                            println(index)
-                            index++
+                                binding.progressBar.incrementProgressBy(1)
+                                println(index)
+                                index++
+                            }
+                            executor.execute(worker)
+
+
                         }
-                        executor.execute(worker)
-
-
+                        executor.shutdown()
+                        run = false
                     }
-                    executor.shutdown()
-                    run = false
+
                 }
 
-            }
-
-
 
             }
-
-
-
-
-
-
-
-
 
 
             //println(songURLS)
