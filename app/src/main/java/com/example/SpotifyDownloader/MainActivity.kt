@@ -39,12 +39,6 @@ class MainActivity : AppCompatActivity() {
         var songNames = listOf<PyObject>()
         var songURLS = listOf<PyObject>()
 
-
-
-
-
-
-
         binding.perms.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 ActivityCompat.requestPermissions(
@@ -57,7 +51,6 @@ class MainActivity : AppCompatActivity() {
                 intent.data = Uri.parse("package:${applicationContext.packageName}")
                 startActivity(intent)
             }
-
 
         }
 
@@ -117,21 +110,9 @@ class MainActivity : AppCompatActivity() {
 
 
             }
-
-
-            //println(songURLS)
-            //println(songURLS)
-
-
         }
-
-
     }
-
-
 }
-
-
 private fun createDirectory(subfoldername: String): String {
     val newFolder = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
