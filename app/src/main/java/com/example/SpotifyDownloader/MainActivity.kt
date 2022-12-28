@@ -62,8 +62,9 @@ class MainActivity : AppCompatActivity() {
                     "songSearchSpotify",
                     binding.PlaylistLinkEditText.text.toString()
                 ).asList().toList()
-                songNames = data[0].asList()
-                songURLS = data[1].asList()
+                songNames = data
+                println(songNames)
+
                 binding.progressBar.max = songNames.size
                 println("got data")
 
@@ -82,11 +83,7 @@ class MainActivity : AppCompatActivity() {
                             var index = 0
                             val worker = Runnable {
                                 module.callAttr(
-                                    "DownloadSongs",
-                                    i,
-                                    songURLS[index],
-                                    saveDirectory, index
-                                )
+                                    "DownloadSongs", i, saveDirectory)
                                 println("Downloading $i")
 
                                 binding.progressBar.incrementProgressBy(1)

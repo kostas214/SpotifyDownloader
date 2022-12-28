@@ -24,7 +24,7 @@ def songSearchSpotify(playlistLink):
     tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
     for key in tracks['items']:
         songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
-        links.append(key['track']['external_urls']['spotify'])
+
     while done:
         if len(songs) == offset + 100:
             tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
@@ -35,13 +35,13 @@ def songSearchSpotify(playlistLink):
         if len(songs) < offset + 100:
             done = False
 
-    return songs,links
+    return songs
 
 
 
 
 
-def DownloadSongs(songs,links,filePath,index):
+def DownloadSongs(songs,filePath):
     urlTemplateForServer = "http://192.168.2.19:5000/?link="
     songId = uyts.Search(songs)
     result = "https://www.youtube.com/watch?v=" + songId.results[0].id
@@ -50,16 +50,16 @@ def DownloadSongs(songs,links,filePath,index):
     safeString = safeString.translate(translation_table)
     fileName = safeString.replace(" ", "") + ".aac"
 
-    tracks = sp.track(track_id=links)
+    tracks = sp.search(songs)
 
-    ArtWorkURL = tracks['album']['images'][0]['url']
-    albumName = tracks['album']['name']
-    albumArtistName = tracks['album']['artists'][0]['name']
-    albumTrackCount = tracks['album']['total_tracks']
-    albumTrackNumber = tracks['track_number']
-    releaseDate = tracks['album']['release_date'][0:4]
-    artistName = tracks['artists'][0]['name']
-    trackName = tracks['name']
+    ArtWorkURL = tracks['tracks']['items'][0]['album']['images'][0]['url']
+    albumName = tracks['tracks']['items'][0]['album']['name']
+    albumArtistName = tracks['tracks']['items'][0]['album']['artists'][0]['name']
+    albumTrackCount = tracks['tracks']['items'][0]['album']['total_tracks']
+    albumTrackNumber = tracks['tracks']['items'][0]['track_number']
+    releaseDate = tracks['tracks']['items'][0]['album']['release_date'][0:4]
+    artistName = tracks['tracks']['items'][0]['artists'][0]['name']
+    trackName = tracks['tracks']['items'][0]['name']
 
 
 
