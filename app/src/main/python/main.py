@@ -42,7 +42,8 @@ def songSearchSpotify(playlistLink):
 
 
 def DownloadSongs(songs,filePath):
-    urlTemplateForServer = "http://192.168.2.19:5000/?link="
+    urlTemplateForServerNgrok = "/?link="
+    urlTemplateForServerLocalHost = "http://192.168.2.19:5000/?link="
     songId = uyts.Search(songs)
     result = "https://www.youtube.com/watch?v=" + songId.results[0].id
     translation_table = str.maketrans('', '', string.punctuation)
@@ -66,7 +67,7 @@ def DownloadSongs(songs,filePath):
 
     st = time.time()
 
-    urlForServer = urlTemplateForServer + songId.results[0].id
+    urlForServer = urlTemplateForServerLocalHost + songId.results[0].id
     fileLocation = fr"{filePath}/{fileName}"
     songData = requests.get(url = urlForServer)
     open(fileLocation,'wb').write(songData.content)

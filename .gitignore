@@ -11,5 +11,4 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 /app/src/main/python/SpotifyApiCredentials.py

@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -15,6 +16,7 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.SpotifyDownloader.databinding.ActivityMainBinding
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
@@ -37,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         val py = Python.getInstance()
         val module = py.getModule("main")
         var songNames = listOf<PyObject>()
-        var songURLS = listOf<PyObject>()
 
         binding.perms.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
@@ -55,6 +56,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.download2.setOnClickListener {
+            binding.download2.isEnabled= false
+            binding.progressBar.setProgress(0)
+
             val saveDirectory = createDirectory("KOSTAS")
 
             val task1 = Thread {
@@ -69,7 +73,24 @@ class MainActivity : AppCompatActivity() {
                 println("got data")
 
             }
+            val task2 = Thread{
+
+                var isCompleted = false
+                while (!isCompleted) {
+                    if (binding.progressBar.progress == binding.progressBar.max) {
+                        runOnUiThread {
+                            binding.download2.isEnabled = true
+                            Toast.makeText(this,"Finished",Toast.LENGTH_SHORT).show()
+                            println("End")
+                        }
+                        isCompleted = true
+
+                    }
+                }
+            }
             task1.start()
+            task2.start()
+
 
             GlobalScope.launch {
                 var run = true
@@ -77,26 +98,27 @@ class MainActivity : AppCompatActivity() {
                     val isRunning = task1.isAlive
                     if (!isRunning) {
                         val executor = Executors.newFixedThreadPool(4)
-
                         for (i in songNames) {
-                            println(i)
-                            var index = 0
                             val worker = Runnable {
-                                module.callAttr(
-                                    "DownloadSongs", i, saveDirectory)
-                                println("Downloading $i")
+                                module.callAttr("DownloadSongs", i, saveDirectory)
+                                binding.progressBar.incrementProgressBy(1) }
 
-                                binding.progressBar.incrementProgressBy(1)
-                                println(index)
-                                index++
-                            }
                             executor.execute(worker)
+                            run = false
                         }
-                        executor.shutdown()
-                        run = false
                     }
+
+
+
+
+
                 }
             }
+
+
+
+
+
         }
     }
 }
