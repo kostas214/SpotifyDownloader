@@ -16,8 +16,6 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_
 Failed = []
 def songSearchSpotify(playlistLink):
     #Initialize Spotipy
-
-
     #Store the songs of the playlist in a list
     done = True
     offset = 0
@@ -44,8 +42,6 @@ def songSearchSpotify(playlistLink):
 
 
 def DownloadSongs(songs,links,filePath,index):
-    print("hello")
-
     urlTemplateForServer = "http://192.168.2.19:5000/?link="
     songId = uyts.Search(songs)
     result = "https://www.youtube.com/watch?v=" + songId.results[0].id
@@ -91,15 +87,11 @@ def DownloadSongs(songs,links,filePath,index):
     print(f'Execution time: {elapsed_time} seconds')
     print(f"Downloads Failed {Failed}, Lenght of array  {len(Failed)}")
 
-
-
     response = requests.get(ArtWorkURL)
     f = music_tag.load_file(fileLocation)
     f['album'] = albumName
     f['albumartist'] = albumArtistName
     f['artist'] = artistName
-
-
     f['artwork'] = response.content
     f['totaltracks'] = albumTrackCount
     f['tracknumber'] = albumTrackNumber

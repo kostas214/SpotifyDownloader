@@ -69,18 +69,13 @@ class MainActivity : AppCompatActivity() {
 
             }
             task1.start()
-            println("task1.start()")
+
             GlobalScope.launch {
-
-
                 var run = true
-                println("val isRunning = task1.isAlive")
                 while (run) {
                     val isRunning = task1.isAlive
-
                     if (!isRunning) {
-                        println("Starting download")
-                        val executor = Executors.newFixedThreadPool(2)
+                        val executor = Executors.newFixedThreadPool(4)
 
                         for (i in songNames) {
                             println(i)
@@ -99,16 +94,11 @@ class MainActivity : AppCompatActivity() {
                                 index++
                             }
                             executor.execute(worker)
-
-
                         }
                         executor.shutdown()
                         run = false
                     }
-
                 }
-
-
             }
         }
     }
