@@ -46,7 +46,7 @@ def songSearchSpotify(playlistLink):
 def DownloadSongs(songs,links,filePath,index):
     print("hello")
 
-
+    urlTemplateForServer = "http://192.168.2.19:5000/?link="
     songId = uyts.Search(songs)
     result = "https://www.youtube.com/watch?v=" + songId.results[0].id
     translation_table = str.maketrans('', '', string.punctuation)
@@ -65,14 +65,22 @@ def DownloadSongs(songs,links,filePath,index):
     artistName = tracks['artists'][0]['name']
     trackName = tracks['name']
 
-    response = requests.get(ArtWorkURL)
+
 
 
     st = time.time()
 
-    yt = YouTube(result)
-    ys = yt.streams.get_audio_only()
-    ys.download(filePath, filename=fileName,timeout = 30,skip_existing=False)
+    urlForServer = urlTemplateForServer + songId.results[0].id
+    fileLocation = fr"{filePath}/{fileName}"
+    songData = requests.get(url = urlForServer)
+    open(fileLocation,'wb').write(songData.content)
+
+
+
+
+
+
+
 
 
 
@@ -81,16 +89,12 @@ def DownloadSongs(songs,links,filePath,index):
     if elapsed_time>30:
         Failed.append(songs)
     print(f'Execution time: {elapsed_time} seconds')
-    print(f"Downloads Failed {Failed}, Lenght of array  {len(Failed)} fail rate is {(len(Failed)*100)/(index+1)} %")
+    print(f"Downloads Failed {Failed}, Lenght of array  {len(Failed)}")
 
 
 
-
-
-
-
-
-    f = music_tag.load_file(f"{filePath}/{fileName}")
+    response = requests.get(ArtWorkURL)
+    f = music_tag.load_file(fileLocation)
     f['album'] = albumName
     f['albumartist'] = albumArtistName
     f['artist'] = artistName

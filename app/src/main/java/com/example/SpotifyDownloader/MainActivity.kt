@@ -77,10 +77,10 @@ class MainActivity : AppCompatActivity() {
                 println("val isRunning = task1.isAlive")
                 while (run) {
                     val isRunning = task1.isAlive
-                    println("while (true){")
+
                     if (!isRunning) {
                         println("Starting download")
-                        val executor = Executors.newFixedThreadPool(4)
+                        val executor = Executors.newFixedThreadPool(2)
 
                         for (i in songNames) {
                             println(i)
@@ -118,6 +118,7 @@ private fun createDirectory(subfoldername: String): String {
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
         subfoldername
     )
+    println("Folder Created")
     return newFolder.toString()
 
 }
