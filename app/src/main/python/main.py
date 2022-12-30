@@ -1,12 +1,11 @@
-from pytube import YouTube
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-import uyts
 import string
 import music_tag
 import requests
 import SpotifyApiCredentials
 import time
+from youtubesearchpython import VideosSearch
 
 
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
@@ -20,17 +19,14 @@ def songSearchSpotify(playlistLink):
     done = True
     offset = 0
     songs = []
-    links = []
     tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
     for key in tracks['items']:
         songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
-
     while done:
         if len(songs) == offset + 100:
             tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
             for key in tracks['items']:
                 songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
-                #links.append(key['track']['external_urls']['spotify'])
             offset += 100
         if len(songs) < offset + 100:
             done = False
@@ -42,16 +38,20 @@ def songSearchSpotify(playlistLink):
 
 
 def DownloadSongs(songs,filePath):
-    urlTemplateForServerNgrok = "/?link="
-    urlTemplateForServerLocalHost = "http://192.168.2.19:5000/?link="
-    songId = uyts.Search(songs)
-    result = "https://www.youtube.com/watch?v=" + songId.results[0].id
+    urlTemplateForServerLocalHost = "http://192.168.2.17:5000/?link="
+
+    songSearch = VideosSearch(songs, limit = 1).result()
+    songId = songSearch['result'][0]['id']
+    songTitle = songSearch['result'][0]['title']
+
+
     translation_table = str.maketrans('', '', string.punctuation)
-    safeString = songId.results[0].title
-    safeString = safeString.translate(translation_table)
+    safeString = songTitle.translate(translation_table)
     fileName = safeString.replace(" ", "") + ".aac"
 
+
     tracks = sp.search(songs)
+
 
     ArtWorkURL = tracks['tracks']['items'][0]['album']['images'][0]['url']
     albumName = tracks['tracks']['items'][0]['album']['name']
@@ -67,19 +67,10 @@ def DownloadSongs(songs,filePath):
 
     st = time.time()
 
-    urlForServer = urlTemplateForServerLocalHost + songId.results[0].id
+    urlForServer = urlTemplateForServerLocalHost + songId
     fileLocation = fr"{filePath}/{fileName}"
     songData = requests.get(url = urlForServer)
     open(fileLocation,'wb').write(songData.content)
-
-
-
-
-
-
-
-
-
 
     et = time.time()
     elapsed_time = et - st
@@ -99,10 +90,4 @@ def DownloadSongs(songs,filePath):
     f['tracktitle'] = trackName
     f['year'] = releaseDate
     f.save()
-
-
-
-
-
-
 

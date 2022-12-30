@@ -16,7 +16,6 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.SpotifyDownloader.databinding.ActivityMainBinding
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
@@ -56,10 +55,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.download2.setOnClickListener {
-            binding.download2.isEnabled= false
-            binding.progressBar.setProgress(0)
+            binding.download2.isEnabled = false
+            binding.progressBar.progress = 0
 
-            val saveDirectory = createDirectory("KOSTAS")
+            val saveDirectory =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
 
             val task1 = Thread {
                 val data = module.callAttr(
@@ -73,14 +73,14 @@ class MainActivity : AppCompatActivity() {
                 println("got data")
 
             }
-            val task2 = Thread{
+            val task2 = Thread {
 
                 var isCompleted = false
                 while (!isCompleted) {
                     if (binding.progressBar.progress == binding.progressBar.max) {
                         runOnUiThread {
                             binding.download2.isEnabled = true
-                            Toast.makeText(this,"Finished",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Finished", Toast.LENGTH_SHORT).show()
                             println("End")
                         }
                         isCompleted = true
@@ -101,7 +101,8 @@ class MainActivity : AppCompatActivity() {
                         for (i in songNames) {
                             val worker = Runnable {
                                 module.callAttr("DownloadSongs", i, saveDirectory)
-                                binding.progressBar.incrementProgressBy(1) }
+                                binding.progressBar.incrementProgressBy(1)
+                            }
 
                             executor.execute(worker)
                             run = false
@@ -109,23 +110,19 @@ class MainActivity : AppCompatActivity() {
                     }
 
 
-
-
-
                 }
             }
-
-
-
 
 
         }
     }
 }
+
 private fun createDirectory(subfoldername: String): String {
     val newFolder = File(
+
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-        subfoldername
+        "$subfoldername"
     )
     println("Folder Created")
     return newFolder.toString()
