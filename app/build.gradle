@@ -27,7 +27,6 @@ android {
 
                 install "spotipy"
                 install "youtube-search-python"
-                install "requests"
                 install "music-tag"
                 install "Pillow"
 
@@ -79,6 +78,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     implementation("androidx.compose.material3:material3:1.0.1")
     implementation("androidx.compose.material3:material3-window-size-class:1.0.1")
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
 
 
 }
