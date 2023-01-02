@@ -8,6 +8,7 @@ from httpx import ReadError
 from requests.exceptions import ChunkedEncodingError
 from spotipy.oauth2 import SpotifyClientCredentials
 from youtubesearchpython import VideosSearch
+import mutagen
 
 import SpotifyApiCredentials
 
@@ -15,7 +16,7 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(
     client_id=SpotifyApiCredentials.SPOTIPY_CLIENT_ID,
     client_secret=SpotifyApiCredentials.SPOTIPY_CLIENT_SECRET,
     ))
-print("hi")
+
 Failed = []
 
 
@@ -30,7 +31,7 @@ def songSearchSpotify(playlistLink):
         tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
     except requests.exceptions.ConnectionError:
         success = 1
-        print("unable to connect to the internet")
+        print("Unable to connect to the internet")
     except spotipy.exceptions.SpotifyException:
         success = 2
         print("Invalid Link")
@@ -43,7 +44,7 @@ def songSearchSpotify(playlistLink):
                 try:
                     tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
                 except requests.exceptions.ConnectionError:
-                    success = False
+                    success = 1
                     print("unable to connect to the internet")
                 for key in tracks['items']:
                     songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
@@ -59,7 +60,7 @@ def songSearchSpotify(playlistLink):
 
 
 def DownloadSongs(songs, filePath):
-    urlTemplateForServerLocalHost = "http://192.168.2.17:5000/?link="
+    urlTemplateForServerLocalHost = "http://192.168.2.23:5000/?link="
 
     try:
         st = time.time()
@@ -109,7 +110,7 @@ def DownloadSongs(songs, filePath):
     except (httpx.ConnectError, ChunkedEncodingError, ReadError):
         print("ConnectionError")
         return 1
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.ConnectionError, mutagen.aac.AACError):
         print("Internal server is down ")
         return 2
     except (PermissionError):
