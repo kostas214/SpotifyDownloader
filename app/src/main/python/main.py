@@ -60,7 +60,7 @@ def songSearchSpotify(playlistLink):
 
 
 def DownloadSongs(songs, filePath):
-    urlTemplateForServerLocalHost = "http://192.168.2.23:5000/?link="
+    urlTemplateForServerLocalHost = "http://192.168.2.14:5000/?link="
 
     try:
         st = time.time()

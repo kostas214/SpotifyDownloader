@@ -151,14 +151,18 @@ class MainActivity : AppCompatActivity() {
                             break
                         }
                     }
-                    if (binding.progressBar.progress == binding.progressBar.max){
-                        runOnUiThread {
-                            Toast.makeText(this, "Finished", Toast.LENGTH_SHORT).show()
-                            binding.perms.isEnabled = true
-                            binding.PlaylistLinkTextBox.isEnabled = true
-                            binding.download2.isEnabled = true
+                    if (!task1.isAlive) {
+                        if (binding.progressBar.progress == binding.progressBar.max) {
+                            println(binding.progressBar.progress)
+                            println(binding.progressBar.max)
+                            runOnUiThread {
+                                Toast.makeText(this, "Finished", Toast.LENGTH_SHORT).show()
+                                binding.perms.isEnabled = true
+                                binding.PlaylistLinkTextBox.isEnabled = true
+                                binding.download2.isEnabled = true
+                            }
+                            break
                         }
-                        break
                     }
                 }
 
