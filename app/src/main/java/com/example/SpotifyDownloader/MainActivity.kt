@@ -188,8 +188,6 @@ class MainActivity : AppCompatActivity() {
                                 binding.progressBar.incrementProgressBy(1)
                                 if (code == 1 || code == 2 || code == 3) {
                                     executor.shutdownNow()
-                                    code = null
-                                    SuccessCode = null
                                     println("1")
                                 }
                             }
