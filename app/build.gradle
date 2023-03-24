@@ -80,4 +80,9 @@ dependencies {
     implementation 'com.github.yausername.youtubedl-android:library:-SNAPSHOT'
     implementation 'com.github.yausername.youtubedl-android:ffmpeg:-SNAPSHOT' // Optional
     implementation 'com.github.yausername.youtubedl-android:aria2c:-SNAPSHOT' // Optional
+
+    //Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'
+
 }
