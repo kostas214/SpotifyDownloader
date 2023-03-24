@@ -63,6 +63,8 @@ def songSearchSpotify(playlistLink):
 
 
 def getDownloadPath(songs):
+    fileName = ""
+    songUrl=""
 
 
     try:
@@ -78,7 +80,7 @@ def getDownloadPath(songs):
     return fileName,songUrl,0
 
 
-def DownloadSongs(songs,fileLocation):
+def insertMetaData(songs,fileLocation):
 
     try:
         songSearch = VideosSearch(songs, limit=1).result()
@@ -110,12 +112,8 @@ def DownloadSongs(songs,fileLocation):
         f.save()
         print("finished")
         return 0
-    except (httpx.ConnectError, ChunkedEncodingError, ReadError):
+    except (httpx.ConnectError, ChunkedEncodingError, ReadError,requests.exceptions.ConnectionError, mutagen.aac.AACError):
         print("ConnectionError")
         return 1
-    except (requests.exceptions.ConnectionError, mutagen.aac.AACError):
-        print("Internal server is down ")
-        return 2
-    except (PermissionError):
-        print("No permissions")
-        return 3
+
+
