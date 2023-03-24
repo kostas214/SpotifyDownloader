@@ -31,7 +31,7 @@ import java.io.File
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Get radio button selection
-        fun RadioButtonSelection(): Int {
+        fun radioButtonSelection(): Int {
             var toBeReturned = 0
             if (binding.selection1.isChecked) {
                 toBeReturned = 1
@@ -125,10 +125,10 @@ class MainActivity : AppCompatActivity() {
                     try {
                         YoutubeDL.getInstance().execute(
                             request
-                        ) { fl: Float, l: Long, s: String? -> }
+                        ) { _: Float, _: Long, _: String? -> }
 
                     } catch (e: YoutubeDLException) {
-                        Log.e(TAG, "Connection Error")
+                        Log.e(tag, "Connection Error")
                         return 1
                     }
 
@@ -137,21 +137,21 @@ class MainActivity : AppCompatActivity() {
                         module.callAttr("insertMetaData", songName, fileLocation).toInt()
 
                     if (responseCode == 1) {
-                        Log.e(TAG, "Connection Error on insertMetaData")
+                        Log.e(tag, "Connection Error on insertMetaData")
                         return responseCode
                     }
 
                 } else {
-                    Log.e(TAG, "Connection Error")
+                    Log.e(tag, "Connection Error")
                     return 1
                 }
-                Log.d(TAG, "No errors")
+                Log.d(tag, "No errors")
                 binding.progressBar.incrementProgressBy(1)
                 return 0
 
 
             } else {
-                Log.e(TAG, "Connection error on getDownloadPath")
+                Log.e(tag, "Connection error on getDownloadPath")
                 return 1
             }
 
@@ -170,15 +170,19 @@ class MainActivity : AppCompatActivity() {
             binding.selection4.isEnabled = enable
 
         }
-        fun checkPermission():Boolean{
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                return  Environment.isExternalStorageManager()
-            }
-            else{
-                val write = ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                val read = ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)
 
-                return write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
+        fun checkPermission(): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Environment.isExternalStorageManager()
+            } else {
+                val write = ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+                val read = ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.READ_EXTERNAL_STORAGE
+                )
+
+                write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
 
             }
 
@@ -188,6 +192,7 @@ class MainActivity : AppCompatActivity() {
 
         //Main part (Download button)
         binding.download.setOnClickListener {
+            binding.progressBar.progress = 0
 
 
             val hasPermission = checkPermission()
@@ -201,7 +206,7 @@ class MainActivity : AppCompatActivity() {
             var songNames: List<PyObject>?
 
 
-            val job = lifecycleScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch(Dispatchers.IO) {
 
 
                 val playlistLink = binding.PlaylistLinkEditText.text.toString()
@@ -210,53 +215,57 @@ class MainActivity : AppCompatActivity() {
 
                 val data = response.await().asList().toList()
                 songNames = data[0].asList()
-                val succesCode = data[1].toInt()
-                Log.d(TAG, "Songs are $songNames")
-                Log.d(TAG, "Code is $succesCode")
-                binding.progressBar.max = (songNames as MutableList<PyObject>).size
+                val successCode = data[1].toInt()
+                Log.d(tag, "Songs are $songNames")
+                Log.d(tag, "Code is $successCode")
+                val songNamesSize = (songNames as MutableList<PyObject>).size
+                binding.progressBar.max = songNamesSize
+                var count = 1
 
 
 
 
-                if (succesCode == 0 && hasPermission) {
-                    val concurrentThreads = RadioButtonSelection()
+
+                if (successCode == 0 && hasPermission) {
+                    val concurrentThreads = radioButtonSelection()
                     val executors = Executors.newFixedThreadPool(concurrentThreads)
+
                     for (i in songNames as MutableList<PyObject>) {
-
                         val worker = Runnable {
-
                             val songName = i.toString()
-
+                            count++
                             when (download(songName)) {
+                                0 -> {
 
-
+                                    if (songNamesSize == binding.progressBar.progress) {
+                                        runOnUiThread {
+                                            Toast.makeText(
+                                                this@MainActivity, "Finished", Toast.LENGTH_SHORT
+                                            ).show()
+                                            enableDisableUI(true)
+                                        }
+                                    }
+                                }
                                 1 -> {
                                     if (queue == 0) {
-                                        queue +=1
-
-
+                                        queue += 1
                                         runOnUiThread {
-
-
                                             Toast.makeText(
                                                 this@MainActivity,
                                                 "Internet Connection Error",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                             enableDisableUI(true)
-
-
                                         }
                                         executors.shutdown()
                                     }
                                 }
-
                             }
                         }
                         executors.execute(worker)
                     }
-                } else if (succesCode == 1 && hasPermission) {
-                    launch(Dispatchers.Main) {
+                } else if (successCode == 1 && hasPermission) {
+                    launch(Dispatchers.Main.immediate) {
                         Toast.makeText(
                             this@MainActivity,
                             "Connection Error try again later",
@@ -264,16 +273,15 @@ class MainActivity : AppCompatActivity() {
                         ).show()
                         enableDisableUI(true)
                     }
-                } else if (succesCode == 2 && hasPermission) {
-                    launch(Dispatchers.Main) {
+                } else if (successCode == 2 && hasPermission) {
+                    launch(Dispatchers.Main.immediate) {
                         Toast.makeText(
                             this@MainActivity, "Invalid Link", Toast.LENGTH_SHORT
                         ).show()
                         enableDisableUI(true)
                     }
-                }
-                else if (!hasPermission) {
-                    launch(Dispatchers.Main) {
+                } else if (!hasPermission) {
+                    launch(Dispatchers.Main.immediate) {
                         Toast.makeText(
                             this@MainActivity, "Storage Permission Not Given", Toast.LENGTH_SHORT
                         ).show()
@@ -281,10 +289,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-
-
             //enableDisableUI(true)
-            Log.d(TAG,"END")
+            Log.d(tag, "END")
         }
     }
 }
