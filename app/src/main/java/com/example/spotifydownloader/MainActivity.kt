@@ -3,6 +3,7 @@ package com.example.spotifydownloader
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
@@ -13,28 +14,31 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.ActivityMainBinding
 import com.yausername.ffmpeg.FFmpeg
-import com.yausername.youtubedl_android.DownloadProgressCallback
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
-    private var SuccessCode: Int? = null
+    private val TAG = "MainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         val binding: ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        //Init youtubedl-android
 
         try {
             YoutubeDL.getInstance().init(this)
@@ -42,13 +46,41 @@ class MainActivity : AppCompatActivity() {
         } catch (e: YoutubeDLException) {
             Log.e("error", "failed to initialize youtubedl-android", e)
         }
+        //Init chaquopy
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this))
         }
         val py = Python.getInstance()
         val module = py.getModule("main")
-        var songNames = listOf<PyObject>()
-        var code: Int?
+
+
+        //Permissions Button
+        binding.perms.setOnClickListener {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100
+                )
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = Uri.parse("package:${applicationContext.packageName}")
+                startActivity(intent)
+            }
+        }
+
+        //Check for internet access
+        fun isDeviceOnline(context: Context): Boolean {
+            val connManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val networkCapabilities = connManager.getNetworkCapabilities(connManager.activeNetwork)
+            return if (networkCapabilities == null) {
+                println("Device Offline")
+                false
+            } else {
+                true
+            }
+        }
+
+        //Get radio button selection
         fun RadioButtonSelection(): Int {
             var toBeReturned = 0
             if (binding.selection1.isChecked) {
@@ -61,265 +93,198 @@ class MainActivity : AppCompatActivity() {
                 toBeReturned = 4
             }
             return toBeReturned
-
         }
 
-        binding.perms.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    100
+        //Download Logic
+        fun download(songName: String): Int {
+
+
+            val videoInfo = module.callAttr("getDownloadPath", songName).asList().toList()
+
+            val filename = videoInfo[0].toString()
+            val ytLInk = videoInfo[1].toString()
+            val code = videoInfo[2].toInt()
+
+            if (code == 0) {
+                val youtubeDLDir = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                    "SpotifyDownloaderTest"
                 )
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = Uri.parse("package:${applicationContext.packageName}")
-                startActivity(intent)
+                val fileLocation = "$youtubeDLDir/${filename}"
+
+                val request = YoutubeDLRequest(ytLInk)
+
+                request.addOption("--output", fileLocation)
+                request.addOption("--audio-format", "aac")
+                request.addOption("-x")
+                request.addOption("--audio-format", "mp3")
+                request.addOption("-R", "2")
+                request.addOption("--socket-timeout", "40")
+
+                if (isDeviceOnline(applicationContext)) {
+                    try {
+                        YoutubeDL.getInstance().execute(
+                            request
+                        ) { fl: Float, l: Long, s: String? -> }
+
+                    } catch (e: YoutubeDLException) {
+                        Log.e(TAG, "Connection Error")
+                        return 1
+                    }
+
+
+                    val responseCode =
+                        module.callAttr("insertMetaData", songName, fileLocation).toInt()
+
+                    if (responseCode == 1) {
+                        Log.e(TAG, "Connection Error on insertMetaData")
+                        return responseCode
+                    }
+
+                } else {
+                    Log.e(TAG, "Connection Error")
+                    return 1
+                }
+                Log.d(TAG, "No errors")
+                binding.progressBar.incrementProgressBy(1)
+                return 0
+
+
+            } else {
+                Log.e(TAG, "Connection error on getDownloadPath")
+                return 1
+            }
+
+        }
+
+
+        //Enabling and disabling the ui
+        fun enableDisableUI(enable: Boolean) {
+
+            binding.perms.isEnabled = enable
+            binding.PlaylistLinkTextBox.isEnabled = enable
+            binding.download.isEnabled = enable
+            binding.selection1.isEnabled = enable
+            binding.selection2.isEnabled = enable
+            binding.selection3.isEnabled = enable
+            binding.selection4.isEnabled = enable
+
+        }
+        fun checkPermission():Boolean{
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                return  Environment.isExternalStorageManager()
+            }
+            else{
+                val write = ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                val read = ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)
+
+                return write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
+
             }
 
 
         }
 
-        binding.download2.setOnClickListener {
-            binding.progressBar.progress = 0
+
+        //Main part (Download button)
+        binding.download.setOnClickListener {
 
 
-            val deviceInternetAccess = isDeviceOnline(this.applicationContext)
+            val hasPermission = checkPermission()
 
 
-            val saveDirectory =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+
+            enableDisableUI(false)
+            var queue = 0
+
+            //define variables
+            var songNames: List<PyObject>?
 
 
-            val task1 = Thread {
-                val data = module.callAttr(
-                    "songSearchSpotify",
-                    binding.PlaylistLinkEditText.text.toString()
-                ).asList().toList()
+            val job = lifecycleScope.launch(Dispatchers.IO) {
+
+
+                val playlistLink = binding.PlaylistLinkEditText.text.toString()
+                val response = async { module.callAttr("songSearchSpotify", playlistLink) }
+
+
+                val data = response.await().asList().toList()
                 songNames = data[0].asList()
-                SuccessCode = data[1].toInt()
-                binding.progressBar.max = songNames.size
-                println("Got Data")
-
-            }
-            val task2 = Thread {
-                code = null
-                SuccessCode = null
-                runOnUiThread {
-                    binding.perms.isEnabled = false
-                    binding.PlaylistLinkTextBox.isEnabled = false
-                    binding.download2.isEnabled = false
-                    binding.selection1.isEnabled = false
-                    binding.selection2.isEnabled = false
-                    binding.selection3.isEnabled = false
-                    binding.selection4.isEnabled = false
-
-                }
-
-                while (true) {
-                    when (code) {
-                        1 -> {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this,
-                                    "Connection Error try again later",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                binding.perms.isEnabled = true
-                                binding.PlaylistLinkTextBox.isEnabled = true
-                                binding.download2.isEnabled = true
-                                binding.selection1.isEnabled = true
-                                binding.selection2.isEnabled = true
-                                binding.selection3.isEnabled = true
-                                binding.selection4.isEnabled = true
+                val succesCode = data[1].toInt()
+                Log.d(TAG, "Songs are $songNames")
+                Log.d(TAG, "Code is $succesCode")
+                binding.progressBar.max = (songNames as MutableList<PyObject>).size
 
 
-                            }
-                            break
-                        }
-                        2 -> {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this,
-                                    "Connection Error try again later",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                binding.perms.isEnabled = true
-                                binding.PlaylistLinkTextBox.isEnabled = true
-                                binding.download2.isEnabled = true
-                                binding.selection1.isEnabled = true
-                                binding.selection2.isEnabled = true
-                                binding.selection3.isEnabled = true
-                                binding.selection4.isEnabled = true
 
 
-                            }
-                            break
-                        }
+                if (succesCode == 0 && hasPermission) {
+                    val concurrentThreads = RadioButtonSelection()
+                    val executors = Executors.newFixedThreadPool(concurrentThreads)
+                    for (i in songNames as MutableList<PyObject>) {
 
-                        3 -> {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this,
-                                    "Storage permission not given",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                binding.perms.isEnabled = true
-                                binding.PlaylistLinkTextBox.isEnabled = true
-                                binding.download2.isEnabled = true
-                                binding.selection1.isEnabled = true
-                                binding.selection2.isEnabled = true
-                                binding.selection3.isEnabled = true
-                                binding.selection4.isEnabled = true
+                        val worker = Runnable {
 
-                            }
-                            break
-                        }
-                    }
-                    when (SuccessCode) {
-                        1 -> {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this,
-                                    "Connection Error try again later",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                binding.perms.isEnabled = true
-                                binding.PlaylistLinkTextBox.isEnabled = true
-                                binding.download2.isEnabled = true
-                                binding.selection1.isEnabled = true
-                                binding.selection2.isEnabled = true
-                                binding.selection3.isEnabled = true
-                                binding.selection4.isEnabled = true
+                            val songName = i.toString()
 
-                            }
-                            break
-                        }
-                        2 -> {
-                            runOnUiThread {
-                                Toast.makeText(this, "Invalid link", Toast.LENGTH_SHORT).show()
-                                binding.perms.isEnabled = true
-                                binding.PlaylistLinkTextBox.isEnabled = true
-                                binding.download2.isEnabled = true
-                                binding.selection1.isEnabled = true
-                                binding.selection2.isEnabled = true
-                                binding.selection3.isEnabled = true
-                                binding.selection4.isEnabled = true
-
-                            }
-                            break
-                        }
-                    }
-                    if (!task1.isAlive) {
-                        if (binding.progressBar.progress == binding.progressBar.max) {
-                            println(binding.progressBar.progress)
-                            println(binding.progressBar.max)
-                            runOnUiThread {
-                                Toast.makeText(this, "Finished", Toast.LENGTH_SHORT).show()
-                                binding.perms.isEnabled = true
-                                binding.PlaylistLinkTextBox.isEnabled = true
-                                binding.download2.isEnabled = true
-                                binding.selection1.isEnabled = true
-                                binding.selection2.isEnabled = true
-                                binding.selection3.isEnabled = true
-                                binding.selection4.isEnabled = true
-                            }
-                            break
-                        }
-                    }
-                }
-            }
-            task1.start()
-            task2.start()
-
-            GlobalScope.launch {
-
-                println(SuccessCode)
-                var run = true
-
-                while (run) {
-                    val isRunning = task1.isAlive
-                    if (!isRunning) {
-                        run = false
-
-                        val executor = Executors.newFixedThreadPool(RadioButtonSelection())
-                        for (i in songNames) {
-                            val worker = Runnable {
+                            when (download(songName)) {
 
 
-                                var title = module.callAttr("getDownloadPath", i).asList().toList()
-                                println(title)
-
-                                var filename = title[0].toString()
-                                var ytLInk = title[1].toString()
-                                code = title[2].toInt()
-
-                                val youtubeDLDir = File(
-                                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                                    "SpotifyDownloaderTest"
-                                )
-                                val request = YoutubeDLRequest(ytLInk)
+                                1 -> {
+                                    if (queue == 0) {
+                                        queue +=1
 
 
-                                var fileLocation = "$youtubeDLDir/${filename}"
-
-                                request.addOption("--output", fileLocation)
-                                request.addOption("--audio-format", "aac")
-                                request.addOption("-x")
-                                request.addOption("--audio-format", "mp3")
-                                request.addOption("-R", "2")
-                                request.addOption("--socket-timeout", "40")
-
-                                if (isDeviceOnline(applicationContext)) {
-                                    try {
-                                        YoutubeDL.getInstance().execute(request,
-                                            DownloadProgressCallback { fl: Float, l: Long, s: String? -> })
-                                        code = module.callAttr("DownloadSongs", i, fileLocation)
-                                            .toInt()
-                                        binding.progressBar.incrementProgressBy(1)
+                                        runOnUiThread {
 
 
-                                    } catch (e: YoutubeDLException) {
-                                        code = 3
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                "Internet Connection Error",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            enableDisableUI(true)
+
+
+                                        }
+                                        executors.shutdown()
                                     }
-                                } else {
-                                    code = 1
                                 }
 
-                                if (code == 1 || code == 2 || code == 3) {
-                                    executor.shutdownNow()
-                                    println("1")
-                                }
-                            }
-                            if (SuccessCode == 0 && deviceInternetAccess) {
-                                executor.execute(worker)
                             }
                         }
+                        executors.execute(worker)
+                    }
+                } else if (succesCode == 1 && hasPermission) {
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Connection Error try again later",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        enableDisableUI(true)
+                    }
+                } else if (succesCode == 2 && hasPermission) {
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity, "Invalid Link", Toast.LENGTH_SHORT
+                        ).show()
+                        enableDisableUI(true)
+                    }
+                }
+                else if (!hasPermission) {
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity, "Storage Permission Not Given", Toast.LENGTH_SHORT
+                        ).show()
+                        enableDisableUI(true)
                     }
                 }
             }
-        }
-    }
-}
-fun isDeviceOnline(context: Context): Boolean {
-    val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val networkCapabilities = connManager.getNetworkCapabilities(connManager.activeNetwork)
-        if (networkCapabilities == null) {
-            println("Device Offline")
-            return false
-        } else {
-            return true
-        }
-    } else {
-        // below Marshmallow
-        val activeNetwork = connManager.activeNetworkInfo
-        if (activeNetwork?.isConnectedOrConnecting == true && activeNetwork.isAvailable) {
-            println("Device Online")
-            return true
-        } else {
-            println("Device Offline")
-            return false
+
+
+            //enableDisableUI(true)
+            Log.d(TAG,"END")
         }
     }
 }
