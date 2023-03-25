@@ -1,216 +1,232 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
-    <TextView
-        android:id="@+id/permissionText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-
-        android:layout_marginTop="20dp"
-        android:text="@string/StoragePermission"
-        app:layout_constraintLeft_toRightOf="@id/imageView5"
-        app:layout_constraintTop_toTopOf="parent"
-
-        />
-
-
-    <ImageView
-        android:id="@+id/imageView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:contentDescription="@string/storageIcon"
-        app:layout_constraintBottom_toBottomOf="@id/permissionText"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@id/permissionText"
-
-
-        app:srcCompat="@android:drawable/ic_menu_save" />
-
-    <Button
-        android:id="@+id/perms"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/permissions"
-        app:icon="@drawable/ic_baseline_storage_24"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-
-        app:layout_constraintTop_toBottomOf="@id/permissionText"
-        tools:layout_editor_absoluteX="129dp"
-        tools:layout_editor_absoluteY="96dp" />
-
-    <ImageView
-        android:id="@+id/shareIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:layout_marginStart="20dp"
-        android:contentDescription="@string/shareIcon"
-
-        app:layout_constraintBottom_toBottomOf="@id/playlistLinkShareLink"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@id/playlistLinkShareLink"
-        app:srcCompat="@android:drawable/ic_menu_share" />
-
-    <TextView
-        android:id="@+id/playlistLinkShareLink"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/playlistLInk"
-        app:layout_constraintLeft_toRightOf="@+id/shareIcon"
-
-
-        app:layout_constraintTop_toBottomOf="@id/perms"
-
-        />
-
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/PlaylistLinkTextBox"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:hint="@string/PlaylistLInk"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/playlistLinkShareLink"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/permissionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+
+            android:layout_marginTop="20dp"
+            android:text="@string/StoragePermission"
+            app:layout_constraintLeft_toRightOf="@id/imageView5"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
 
 
-        app:startIconDrawable="@drawable/ic_baseline_insert_link_24">
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:contentDescription="@string/storageIcon"
+            app:layout_constraintBottom_toBottomOf="@id/permissionText"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/permissionText"
 
-        <com.google.android.material.textfield.TextInputEditText
 
-            android:id="@+id/PlaylistLinkEditText"
+            app:srcCompat="@android:drawable/ic_menu_save" />
+
+        <Button
+            android:id="@+id/perms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/permissions"
+            app:icon="@drawable/ic_baseline_storage_24"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/permissionText"
+            tools:layout_editor_absoluteX="129dp"
+            tools:layout_editor_absoluteY="96dp" />
+
+        <ImageView
+            android:id="@+id/shareIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginStart="20dp"
+            android:contentDescription="@string/shareIcon"
+
+            app:layout_constraintBottom_toBottomOf="@id/playlistLinkShareLink"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/playlistLinkShareLink"
+            app:srcCompat="@android:drawable/ic_menu_share" />
+
+        <TextView
+            android:id="@+id/playlistLinkShareLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/playlistLInk"
+            app:layout_constraintLeft_toRightOf="@+id/shareIcon"
+
+
+            app:layout_constraintTop_toBottomOf="@id/perms"
+
+            />
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/PlaylistLinkTextBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textUri"
-            android:textColorHint="#546E7A"
-            tools:ignore="TextContrastCheck" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-
-    <TextView
-        android:id="@+id/pressDownload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/downloadPlaylist"
-        app:layout_constraintLeft_toRightOf="@id/startIcon"
-        app:layout_constraintTop_toBottomOf="@id/PlaylistLinkTextBox"
-
-        />
-
-    <ImageView
-        android:id="@+id/startIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:contentDescription="@string/arrowIcon"
-        android:rotationY="180"
-        app:layout_constraintBottom_toBottomOf="@id/pressDownload"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@id/pressDownload"
-        app:srcCompat="?attr/actionModeCloseDrawable" />
-
-    <Button
-        android:id="@+id/download"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/download"
-        app:icon="@drawable/ic_baseline_download_24"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="20dp"
+            android:hint="@string/PlaylistLInk"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/playlistLinkShareLink"
 
 
-        app:layout_constraintTop_toBottomOf="@id/pressDownload"
+            app:startIconDrawable="@drawable/ic_baseline_insert_link_24">
 
-        />
+            <com.google.android.material.textfield.TextInputEditText
 
-    <TextView
-        android:id="@+id/ProgressBarText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/progress_bar"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/download"
+                android:id="@+id/PlaylistLinkEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri"
+                android:textColorHint="#546E7A"
+                tools:ignore="TextContrastCheck" />
 
-        />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ProgressBarText" />
-    <TextView
-        android:id="@+id/concurrentDownloads"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/progressBar"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="20dp"
-        android:text="Concurent Downloads"/>
-
-    <RadioGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/radioGroup"
-        tools:layout_editor_absoluteX="-16dp"
-        tools:layout_editor_absoluteY="473dp"
-        app:layout_constraintTop_toBottomOf="@id/concurrentDownloads"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_margin="20dp">
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <RadioButton
-            android:id="@+id/selection1"
+        <TextView
+            android:id="@+id/pressDownload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"
-            android:checked="true"/>
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/downloadPlaylist"
+            app:layout_constraintLeft_toRightOf="@id/startIcon"
+            app:layout_constraintTop_toBottomOf="@id/PlaylistLinkTextBox"
 
-        <RadioButton
-            android:id="@+id/selection2"
+            />
+
+        <ImageView
+            android:id="@+id/startIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2" />
-        <RadioButton
-            android:id="@+id/selection3"
+            android:layout_marginStart="20dp"
+            android:contentDescription="@string/arrowIcon"
+            android:rotationY="180"
+            app:layout_constraintBottom_toBottomOf="@id/pressDownload"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/pressDownload"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
+        <Button
+            android:id="@+id/download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="3" />
-        <RadioButton
-            android:id="@+id/selection4"
+            android:layout_marginTop="20dp"
+            android:text="@string/download"
+            app:icon="@drawable/ic_baseline_download_24"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+
+
+            app:layout_constraintTop_toBottomOf="@id/pressDownload"
+
+            />
+
+        <TextView
+            android:id="@+id/ProgressBarText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="4" />
+            android:layout_marginTop="20dp"
+            android:text="@string/progress_bar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/download"
 
-    </RadioGroup>
+            />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ProgressBarText" />
+        <TextView
+            android:id="@+id/concurrentDownloads"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/progressBar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginTop="20dp"
+            android:text="Concurent Downloads"/>
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/radioGroup"
+            tools:layout_editor_absoluteX="-16dp"
+            tools:layout_editor_absoluteY="473dp"
+            app:layout_constraintTop_toBottomOf="@id/concurrentDownloads"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_margin="20dp">
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <RadioButton
+                android:id="@+id/selection1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/selection2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2" />
+            <RadioButton
+                android:id="@+id/selection3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3" />
+            <RadioButton
+                android:id="@+id/selection4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4" />
+
+        </RadioGroup>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/nav_header_menu"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"/>
+
+</androidx.drawerlayout.widget.DrawerLayout>
+
+

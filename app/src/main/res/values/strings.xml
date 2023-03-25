@@ -11,4 +11,6 @@
     <string name="shareIcon">Share Icon</string>
     <string name="arrowIcon">Arrow Icon</string>
     <string name="progress_bar">Progress bar</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
 </resources>

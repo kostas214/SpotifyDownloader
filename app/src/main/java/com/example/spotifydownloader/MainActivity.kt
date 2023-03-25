@@ -11,7 +11,9 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.util.Log
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,11 +34,60 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
     private val tag = "MainActivity"
+
+    private lateinit var toggle:ActionBarDrawerToggle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val binding: ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+        toggle = ActionBarDrawerToggle(this@MainActivity,binding.drawerLayout,R.string.open,R.string.close)
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        binding.navView.setNavigationItemSelectedListener{
+            when(it.itemId){
+
+
+                R.id.playlistMode -> Toast.makeText(applicationContext,"Clicked Playlist Download Mode",Toast.LENGTH_SHORT).show()
+                R.id.albumMode -> Toast.makeText(applicationContext,"Clicked Album Download Mode",Toast.LENGTH_SHORT).show()
+                R.id.songNameMode -> Toast.makeText(applicationContext,"Clicked Song Name Download Mode",Toast.LENGTH_SHORT).show()
+
+
+            }
+            true
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         //Init youtubedl-android
 
@@ -293,4 +344,17 @@ class MainActivity : AppCompatActivity() {
             Log.d(tag, "END")
         }
     }
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (toggle.onOptionsItemSelected(item)){
+            return true
+        }
+
+
+        return super.onOptionsItemSelected(item)
+    }
+
+
+
 }

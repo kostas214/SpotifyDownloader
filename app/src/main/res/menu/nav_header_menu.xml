@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <item
+        android:id="@+id/playlistMode"
+        android:title="Playlist Download Mode"
+        android:icon="@drawable/baseline_format_list_bulleted_24"/>
+    <item
+        android:id="@+id/albumMode"
+        android:title="Album Download Mode"
+        android:icon="@drawable/baseline_album_24"/>
+    <item
+        android:id="@+id/songNameMode"
+        android:title="Song Name Download Mode"
+        android:icon="@drawable/baseline_music_note_24"/>
+
+
+
+</menu>
