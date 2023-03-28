@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".playListFragment">
+
+    <TextView
+        android:id="@+id/permissionTextPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+
+        android:layout_marginTop="20dp"
+        android:text="@string/StoragePermission"
+        app:layout_constraintLeft_toRightOf="@id/imageView5PLF"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
+
+
+    <ImageView
+        android:id="@+id/imageView5PLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:contentDescription="@string/storageIcon"
+        app:layout_constraintBottom_toBottomOf="@id/permissionTextPLF"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/permissionTextPLF"
+
+
+        app:srcCompat="@android:drawable/ic_menu_save" />
+
+    <Button
+        android:id="@+id/permsPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/permissions"
+        app:icon="@drawable/ic_baseline_storage_24"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/permissionTextPLF"
+        tools:layout_editor_absoluteX="129dp"
+        tools:layout_editor_absoluteY="96dp" />
+
+    <ImageView
+        android:id="@+id/shareIconPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="20dp"
+        android:contentDescription="@string/shareIcon"
+
+        app:layout_constraintBottom_toBottomOf="@id/playlistLinkShareLinkPLF"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/playlistLinkShareLinkPLF"
+        app:srcCompat="@android:drawable/ic_menu_share" />
+
+    <TextView
+        android:id="@+id/playlistLinkShareLinkPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/insertPlaylistLink"
+        app:layout_constraintLeft_toRightOf="@+id/shareIconPLF"
+
+
+        app:layout_constraintTop_toBottomOf="@id/permsPLF"
+
+        />
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/PlaylistLinkTextBoxPLF"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
+        android:hint="@string/playlistLink"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playlistLinkShareLinkPLF"
+
+
+        app:startIconDrawable="@drawable/ic_baseline_insert_link_24">
+
+        <com.google.android.material.textfield.TextInputEditText
+
+            android:id="@+id/PlaylistLinkEditTextPLF"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textUri"
+            android:textColorHint="#546E7A"
+            tools:ignore="TextContrastCheck" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <TextView
+        android:id="@+id/pressDownloadPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/downloadPlaylist"
+        app:layout_constraintLeft_toRightOf="@id/startIconPLF"
+        app:layout_constraintTop_toBottomOf="@id/PlaylistLinkTextBoxPLF"
+
+        />
+
+    <ImageView
+        android:id="@+id/startIconPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:contentDescription="@string/arrowIcon"
+        android:rotationY="180"
+        app:layout_constraintBottom_toBottomOf="@id/pressDownloadPLF"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/pressDownloadPLF"
+        app:srcCompat="?attr/actionModeCloseDrawable" />
+
+    <Button
+        android:id="@+id/downloadPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/download"
+        app:icon="@drawable/ic_baseline_download_24"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+
+
+        app:layout_constraintTop_toBottomOf="@id/pressDownloadPLF"
+
+        />
+
+    <TextView
+        android:id="@+id/ProgressBarTextPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/progress_bar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/downloadPLF"
+
+        />
+
+    <ProgressBar
+        android:id="@+id/progressBarPLF"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ProgressBarTextPLF" />
+    <TextView
+        android:id="@+id/concurrentDownloadsPLF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/progressBarPLF"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="20dp"
+        android:text="Concurent Downloads"/>
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/radioGroupPLF"
+        tools:layout_editor_absoluteX="-16dp"
+        tools:layout_editor_absoluteY="473dp"
+        app:layout_constraintTop_toBottomOf="@id/concurrentDownloadsPLF"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp">
+
+
+        <RadioButton
+            android:id="@+id/selection1PLF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/selection2PLF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2" />
+        <RadioButton
+            android:id="@+id/selection3PLF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3" />
+        <RadioButton
+            android:id="@+id/selection4PLF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4" />
+
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

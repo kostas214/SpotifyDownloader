@@ -1,16 +1,34 @@
 <resources>
+
     <string name="app_name">SpotifyDownloader</string>
-    <string name="textfield_label">Playlist Link</string>
-    <string name="PlaylistLInk">Playlist Link</string>
-    <string name="permissions">Permissions</string>
-    <string name="download">Download</string>
-    <string name="StoragePermission">Give permission to access storage</string>
-    <string name="playlistLInk">Insert a Spotify playlist share link</string>
-    <string name="downloadPlaylist">Press Download to download the whole playlist</string>
+    <!--Shared -->
     <string name="storageIcon">Storage Icon</string>
     <string name="shareIcon">Share Icon</string>
     <string name="arrowIcon">Arrow Icon</string>
     <string name="progress_bar">Progress bar</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
+    <string name="permissions">Permissions</string>
+    <string name="download">Download</string>
+    <string name="StoragePermission">Give permission to access storage</string>
+
+
+    <!--Playlist Fragment -->
+    <string name="playlistLink">Playlist Link</string>
+    <string name="insertPlaylistLink">Insert a Spotify playlist share link</string>
+    <string name="downloadPlaylist">Press Download to download the whole playlist</string>
+
+
+    <!--Playlist Fragment -->
+    <string name="albumLink">Album Link</string>
+    <string name="insertAlbumLink">Insert a Spotify album share link</string>
+    <string name="downloadAlbum">Press Download to download the whole album</string>
+
+
+    <!--Song Fragment -->
+    <string name="songLink">Song Name</string>
+    <string name="insertSongLink">Insert a Spotify song share link</string>
+    <string name="downloadSong">Press Download to download the song</string>
+
+
 </resources>
