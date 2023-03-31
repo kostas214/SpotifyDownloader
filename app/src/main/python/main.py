@@ -20,7 +20,45 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(
 Failed = []
 
 
-def songSearchSpotify(playlistLink):
+def songSearchSpotifyPlaylist(albumLink):
+    # Initialize Spotipy
+    # Store the songs of the playlist in a list
+    success = 0
+    done = True
+    offset = 0
+    songs = []
+    try:
+        tracks = sp.album_tracks(album_id=albumLink, offset=offset)
+    except requests.exceptions.ConnectionError:
+        success = 1
+        print("Unable to connect to the internet")
+    except spotipy.exceptions.SpotifyException:
+        success = 2
+        print("Invalid Link")
+
+    if success == 0:
+        for key in tracks['items']:
+            songs.append(f"{key['name']} {key['artists'][0]['name']}")
+        while done:
+            if len(songs) == offset + 100:
+                try:
+                    tracks = sp.album_tracks(album_id=playlistLink, offset=offset)
+                except requests.exceptions.ConnectionError:
+                    success = 1
+                    print("unable to connect to the internet")
+                for key in tracks['items']:
+                    songs.append(f"{key['name']} {key['artists'][0]['name']}")
+                offset += 100
+            if len(songs) < offset + 100:
+                done = False
+
+        return songs, success
+
+    else:
+        print("unable to get songs")
+        return songs, success
+
+def songSearchSpotifyAlbum(playlistLink):
     # Initialize Spotipy
     # Store the songs of the playlist in a list
     success = 0
@@ -60,8 +98,6 @@ def songSearchSpotify(playlistLink):
 
 
 
-
-
 def getDownloadPath(songs):
     fileName = ""
     songUrl=""
@@ -69,7 +105,11 @@ def getDownloadPath(songs):
 
     try:
         songSearch = VideosSearch(songs, limit=1).result()
-        songId = songSearch['result'][0]['id']
+        try:
+
+            songId = songSearch['result'][0]['id']
+        except(IndexError):
+            return fileName,songUrl,2
         songUrl= "https://youtu.be/"+songId
         songTitle = songSearch['result'][0]['title']
         translation_table = str.maketrans('', '', string.punctuation)
@@ -84,14 +124,12 @@ def insertMetaData(songs,fileLocation):
 
     try:
         songSearch = VideosSearch(songs, limit=1).result()
+
+
         tracks = sp.search(songs)
         ArtWorkURL = tracks['tracks']['items'][0]['album']['images'][0]['url']
-
         songId = songSearch['result'][0]['id']
         songTitle = songSearch['result'][0]['title']
-
-        response = requests.get(ArtWorkURL)
-
         albumName = tracks['tracks']['items'][0]['album']['name']
         albumArtistName = tracks['tracks']['items'][0]['album']['artists'][0]['name']
         albumTrackCount = tracks['tracks']['items'][0]['album']['total_tracks']
@@ -99,6 +137,15 @@ def insertMetaData(songs,fileLocation):
         releaseDate = tracks['tracks']['items'][0]['album']['release_date'][0:4]
         artistName = tracks['tracks']['items'][0]['artists'][0]['name']
         trackName = tracks['tracks']['items'][0]['name']
+
+
+
+
+
+
+        response = requests.get(ArtWorkURL)
+
+
 
         f = music_tag.load_file(fileLocation)
         f['album'] = albumName
@@ -115,5 +162,8 @@ def insertMetaData(songs,fileLocation):
     except (httpx.ConnectError, ChunkedEncodingError, ReadError,requests.exceptions.ConnectionError, mutagen.aac.AACError):
         print("ConnectionError")
         return 1
+    except(spotipy.exceptions.SpotifyException,IndexError):
+        print("Spotipy name error")
+        return 2
 
 

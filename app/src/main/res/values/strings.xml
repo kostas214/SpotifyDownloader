@@ -8,9 +8,9 @@
     <string name="progress_bar">Progress bar</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
-    <string name="permissions">Permissions</string>
+    <string name="permissions">Save location</string>
     <string name="download">Download</string>
-    <string name="StoragePermission">Give permission to access storage</string>
+    <string name="StoragePermission">Select save location</string>
 
 
     <!--Playlist Fragment -->

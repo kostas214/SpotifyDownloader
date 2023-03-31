@@ -1,32 +1,30 @@
 package com.example.spotifydownloader
 
 import android.app.Activity
-import android.os.Build
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.View
-import androidx.core.app.ActivityCompat
-import com.example.spotifydownloader.databinding.FragmentPlayListBinding
-import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Uri
-import android.os.Environment
-import android.provider.Settings
+import android.os.Bundle
+import android.provider.DocumentsContract
 import android.util.Log
+import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
+import com.example.spotifydownloader.databinding.FragmentPlayListBinding
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.apache.commons.io.IOUtils
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -34,26 +32,27 @@ import java.util.concurrent.Executors
 class playListFragment : Fragment(R.layout.fragment_play_list) {
     private lateinit var binding: FragmentPlayListBinding
     private val tag = "MainActivity"
-
-
-
+    private var  data: Intent? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val py = Python.getInstance()
         val module = py.getModule("main")
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // There are no request codes
+                data = result.data
+                if (data != null) {
+                    Log.d(tag,data?.data.toString())
+                    Log.d(tag,(context as Activity).externalCacheDir.toString())
+                }
+            }
+        }
         binding = FragmentPlayListBinding.bind(view)
         //Permissions Button
         binding.permsPLF.setOnClickListener {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                ActivityCompat.requestPermissions(
-                    context as Activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100
-                )
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = Uri.parse("package:${(context as Activity).packageName}")
-                startActivity(intent)
-            }
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            resultLauncher.launch(intent)
+            Log.d(tag,resultLauncher.toString())
         }
-
         //Check for internet access
         fun isDeviceOnline(context: Context): Boolean {
             val connManager =
@@ -66,7 +65,6 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                 true
             }
         }
-
         //Get radio button selection
         fun radioButtonSelection(): Int {
             var toBeReturned = 0
@@ -81,24 +79,22 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
             }
             return toBeReturned
         }
-
         //Download Logic
         fun download(songName: String): Int {
+        val videoInfo = module.callAttr("getDownloadPath", songName).asList().toList()
 
-
-            val videoInfo = module.callAttr("getDownloadPath", songName).asList().toList()
+            val tmpFile = File.createTempFile("Spotify downloader", null, (context as Activity).externalCacheDir)
+            tmpFile.delete()
+            tmpFile.mkdir()
+            tmpFile.deleteOnExit()
 
             val filename = videoInfo[0].toString()
             val ytLInk = videoInfo[1].toString()
             val code = videoInfo[2].toInt()
 
-            if (code == 0) {
-                val youtubeDLDir = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                    "SpotifyDownloaderTest"
-                )
-                val fileLocation = "$youtubeDLDir/${filename}"
+            if (code == 0 && data!=null ) {
 
+                val fileLocation = "${tmpFile.absolutePath}/${filename}"
                 val request = YoutubeDLRequest(ytLInk)
 
                 request.addOption("--output", fileLocation)
@@ -108,7 +104,10 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                 request.addOption("-R", "2")
                 request.addOption("--socket-timeout", "40")
 
-                if (isDeviceOnline(context as Activity)) {
+                val uri = data?.data
+                val documentFIle:DocumentFile = DocumentFile.fromTreeUri((context as Activity),uri!!)!!
+                val dc: DocumentFile? = documentFIle.findFile(filename)
+                if (isDeviceOnline(context as Activity) && dc?.exists()==null) {
                     try {
                         YoutubeDL.getInstance().execute(
                             request
@@ -116,32 +115,65 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
                     } catch (e: YoutubeDLException) {
                         Log.e(tag, "Connection Error")
+                        tmpFile.deleteRecursively()
                         return 1
                     }
-
-
                     val responseCode =
                         module.callAttr("insertMetaData", songName, fileLocation).toInt()
+                    var destUri = data?.data
+                    val treeUri = Uri.parse(destUri.toString())
+                    val docId = DocumentsContract.getTreeDocumentId(treeUri)
+                    val destDir = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                    val fileTempLocation = File(fileLocation)
+                    val mimeType =
+                        MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
+                    destUri = DocumentsContract.createDocument(
+                        (context as Activity).contentResolver,
+                        destDir,
+                        mimeType,
+                        fileTempLocation.name.toString())
+                    val ins = fileTempLocation.inputStream()
+                    val ops = (context as Activity).contentResolver.openOutputStream(destUri!!)
+                    IOUtils.copy(ins, ops)
+                    IOUtils.closeQuietly(ops)
+                    IOUtils.closeQuietly(ins)
 
                     if (responseCode == 1) {
                         Log.e(tag, "Connection Error on insertMetaData")
+                        tmpFile.deleteRecursively()
                         return responseCode
                     }
-
-                } else {
+                    else if (responseCode == 2){
+                        Log.e(tag, "Spotipy name error")
+                        tmpFile.deleteRecursively()
+                        return 3
+                    }
+                } else if (!(isDeviceOnline(context as Activity))) {
                     Log.e(tag, "Connection Error")
+                    tmpFile.deleteRecursively()
                     return 1
+                }
+                else {
+                    Log.d(tag, "Already exists skipping")
+                    tmpFile.deleteRecursively()
+                    binding.progressBarPLF.incrementProgressBy(1)
+                    return 2
                 }
                 Log.d(tag, "No errors")
                 binding.progressBarPLF.incrementProgressBy(1)
+                tmpFile.deleteRecursively()
                 return 0
 
-
-            } else {
+            } else if (code == 1){
                 Log.e(tag, "Connection error on getDownloadPath")
+                tmpFile.deleteRecursively()
                 return 1
             }
-
+            else {
+                Log.e(tag, "Not specified folder")
+                tmpFile.deleteRecursively()
+                return 3
+            }
         }
 
 
@@ -158,100 +190,102 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
         }
 
-        fun checkPermission(): Boolean {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Environment.isExternalStorageManager()
-            } else {
-                val write = ContextCompat.checkSelfPermission(
-                    context as Activity, Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-                val read = ContextCompat.checkSelfPermission(
-                    context as Activity, Manifest.permission.READ_EXTERNAL_STORAGE
-                )
 
-                write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
-
-            }
-
-
-        }
 
 
         //Main part (Download button)
         binding.downloadPLF.setOnClickListener {
             binding.progressBarPLF.progress = 0
-
-
-            val hasPermission = checkPermission()
-
-
-
-            enableDisableUI(false)
+            runOnUiThread {
+                enableDisableUI(false)
+            }
             var queue = 0
-
             //define variables
             var songNames: List<PyObject>?
 
-
             lifecycleScope.launch(Dispatchers.IO) {
 
-
                 val playlistLink = binding.PlaylistLinkEditTextPLF.text.toString()
-                val response = async { module.callAttr("songSearchSpotify", playlistLink) }
-
-
-                val data = response.await().asList().toList()
-                songNames = data[0].asList()
-                val successCode = data[1].toInt()
+                val response = async { module.callAttr("songSearchSpotifyPlaylist", playlistLink) }
+                val songs = response.await().asList().toList()
+                songNames = songs[0].asList()
+                val successCode = songs[1].toInt()
                 Log.d(tag, "Songs are $songNames")
                 Log.d(tag, "Code is $successCode")
                 val songNamesSize = (songNames as MutableList<PyObject>).size
                 binding.progressBarPLF.max = songNamesSize
-                var count = 1
 
+                if (isDeviceOnline(context as Activity)  && data !=null && successCode == 0) {
 
-
-
-
-                if (successCode == 0 && hasPermission) {
                     val concurrentThreads = radioButtonSelection()
                     val executors = Executors.newFixedThreadPool(concurrentThreads)
 
                     for (i in songNames as MutableList<PyObject>) {
                         val worker = Runnable {
-                            val songName = i.toString()
-                            count++
-                            when (download(songName)) {
-                                0 -> {
 
-                                    if (songNamesSize == binding.progressBarPLF.progress) {
-                                         runOnUiThread{
-                                            Toast.makeText(
-                                                context as Activity, "Finished", Toast.LENGTH_SHORT
-                                            ).show()
-                                            enableDisableUI(true)
+                            if (!executors.isShutdown) {
+
+                                val songName = i.toString()
+                                when (download(songName)) {
+                                    0 -> {
+
+                                        if (songNamesSize == binding.progressBarPLF.progress) {
+                                            runOnUiThread {
+                                                Toast.makeText(
+                                                    context as Activity,
+                                                    "Finished",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                enableDisableUI(true)
+                                            }
                                         }
                                     }
-                                }
-                                1 -> {
-                                    if (queue == 0) {
-                                        queue += 1
-                                        runOnUiThread {
-                                            Toast.makeText(
-                                                context as Activity,
-                                                "Internet Connection Error",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            enableDisableUI(true)
+                                    1 -> {
+                                        if (queue == 0) {
+                                            queue += 1
+                                            runOnUiThread {
+                                                Toast.makeText(
+                                                    context as Activity,
+                                                    "Internet Connection Error",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                enableDisableUI(true)
+                                            }
+                                            executors.shutdown()
                                         }
-                                        executors.shutdown()
+                                    }
+                                    2 -> {
+                                        if (songNamesSize == binding.progressBarPLF.progress) {
+                                            runOnUiThread {
+                                                Toast.makeText(
+                                                    context as Activity,
+                                                    "Finished",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                enableDisableUI(true)
+                                            }
+                                        }
+                                    }
+                                    3 -> {
+                                        if (queue == 0) {
+                                            queue += 1
+                                            runOnUiThread {
+                                                Toast.makeText(
+                                                    context as Activity,
+                                                    "Please choose a folder",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                enableDisableUI(true)
+                                            }
+                                            executors.shutdown()
+                                        }
                                     }
                                 }
                             }
                         }
                         executors.execute(worker)
                     }
-                } else if (successCode == 1 && hasPermission) {
+                } else if (successCode == 1 ) {
                     runOnUiThread {
                         Toast.makeText(
                             context as Activity,
@@ -260,23 +294,24 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                         ).show()
                         enableDisableUI(true)
                     }
-                } else if (successCode == 2 && hasPermission) {
+
+                } else if (successCode == 2 ) {
                     runOnUiThread    {
                         Toast.makeText(
                             context as Activity, "Invalid Link", Toast.LENGTH_SHORT
                         ).show()
                         enableDisableUI(true)
                     }
-                } else if (!hasPermission) {
+                }
+                else if (data ==null) {
                     runOnUiThread {
                         Toast.makeText(
-                            context as Activity, "Storage Permission Not Given", Toast.LENGTH_SHORT
+                            context as Activity, "Please choose a folder", Toast.LENGTH_SHORT
                         ).show()
                         enableDisableUI(true)
                     }
                 }
             }
-            //enableDisableUI(true)
             Log.d(tag, "END")
         }
     }
@@ -285,18 +320,4 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
         if (!isAdded) return // Fragment not attached to an Activity
         activity?.runOnUiThread(action)
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
