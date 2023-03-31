@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SpotifyDownloader"
         android:extractNativeLibs="true"
-        tools:targetApi="33">
+        tools:targetApi="33"
+        android:name=".SpotifyDownloaderApplication">
         <activity
             android:name=".MainActivity"
             android:exported="true">

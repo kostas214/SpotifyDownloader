@@ -1,17 +1,20 @@
 package com.example.spotifydownloader
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.lifecycleScope
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.ActivityMainBinding
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
 
@@ -113,18 +117,21 @@ class MainActivity : AppCompatActivity() {
 
 
         //Init youtubedl-android
+        lifecycleScope.launch{
+            try {
+                YoutubeDL.getInstance().init(applicationContext )
+                FFmpeg.getInstance().init(applicationContext)
+            } catch (e: YoutubeDLException) {
+                Log.e("error", "failed to initialize youtubedl-android", e)
 
-        try {
-            YoutubeDL.getInstance().init(this)
-            FFmpeg.getInstance().init(this)
-        } catch (e: YoutubeDLException) {
-            Log.e("error", "failed to initialize youtubedl-android", e)
+
+            }
+            //Init chaquopy
+            if (!Python.isStarted()) {
+                Python.start(AndroidPlatform(applicationContext))
+            }
 
 
-        }
-        //Init chaquopy
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(this))
         }
 
 
