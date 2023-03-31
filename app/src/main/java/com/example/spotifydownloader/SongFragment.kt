@@ -1,37 +1,35 @@
 package com.example.spotifydownloader
 
 import android.app.Activity
-import android.os.Build
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.View
-import androidx.core.app.ActivityCompat
-import com.chaquo.python.Python
-import com.example.spotifydownloader.databinding.FragmentSongBinding
-import android.Manifest
-import android.content.Intent
 import android.content.Context
-import android.content.pm.PackageManager
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
-import android.os.Environment
-import android.provider.Settings
+import android.os.Bundle
+import android.provider.DocumentsContract
 import android.util.Log
+import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.chaquo.python.Python
+import com.example.spotifydownloader.databinding.FragmentSongBinding
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.apache.commons.io.IOUtils
 import java.io.File
 
 
 class SongFragment : Fragment(R.layout.fragment_song) {
     private lateinit var binding: FragmentSongBinding
+    private var data: Intent? = null
     private val tag = "MainActivity"
-
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -40,17 +38,27 @@ class SongFragment : Fragment(R.layout.fragment_song) {
         val module = py.getModule("main")
 
         super.onViewCreated(view, savedInstanceState)
+        val resultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    // There are no request codes
+                    data = result.data
+                    if (data != null) {
+                        Log.d(tag, data?.data.toString())
+                        Log.d(tag, (context as Activity).externalCacheDir.toString())
+
+                    }
+
+                }
+
+            }
 
         binding.perms.setOnClickListener {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                ActivityCompat.requestPermissions(
-                    context as Activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100
-                )
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = Uri.parse("package:${(context as Activity).packageName}")
-                startActivity(intent)
-            }
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            resultLauncher.launch(intent)
+            Log.d(tag, resultLauncher.toString())
+
+
         }
 
         fun isDeviceOnline(context: Context): Boolean {
@@ -75,11 +83,15 @@ class SongFragment : Fragment(R.layout.fragment_song) {
             val code = videoInfo[2].toInt()
 
             if (code == 0) {
-                val youtubeDLDir = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                    "SpotifyDownloaderTest"
+
+                val tmpFile = File.createTempFile(
+                    "Spotify downloader", null, (context as Activity).externalCacheDir
                 )
-                val fileLocation = "$youtubeDLDir/${filename}"
+                tmpFile.delete()
+                tmpFile.mkdir()
+                tmpFile.deleteOnExit()
+                val fileLocation = "${tmpFile.absolutePath}/${filename}"
+
 
                 val request = YoutubeDLRequest(ytLInk)
 
@@ -90,11 +102,22 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                 request.addOption("-R", "2")
                 request.addOption("--socket-timeout", "40")
 
-                if (isDeviceOnline(context as Activity)) {
+
+                val uri = data?.data
+
+                val documentFIle: DocumentFile =
+                    DocumentFile.fromTreeUri((context as Activity), uri!!)!!
+                val dc: DocumentFile? = documentFIle.findFile(filename)
+                Log.d(tag, dc?.exists().toString())
+
+                if (isDeviceOnline(context as Activity) && dc?.exists() == null) {
                     try {
+
+
                         YoutubeDL.getInstance().execute(
                             request
                         ) { _: Float, _: Long, _: String? -> }
+
 
                     } catch (e: YoutubeDLException) {
                         Log.e(tag, "Connection Error")
@@ -105,22 +128,65 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                     val responseCode =
                         module.callAttr("insertMetaData", songName, fileLocation).toInt()
 
+                    var destUri = data?.data
+                    val treeUri = Uri.parse(destUri.toString())
+                    val docId = DocumentsContract.getTreeDocumentId(treeUri)
+                    val destDir = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+
+
+                    val fileTempLocation = File(fileLocation)
+
+
+                    val mimeType = MimeTypeMap.getSingleton()
+                        .getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
+                    destUri = DocumentsContract.createDocument(
+                        (context as Activity).contentResolver,
+                        destDir,
+                        mimeType,
+                        fileTempLocation.name.toString()
+                    )
+                    val ins = fileTempLocation.inputStream()
+                    val ops = (context as Activity).contentResolver.openOutputStream(destUri!!)
+                    IOUtils.copy(ins, ops)
+                    IOUtils.closeQuietly(ops)
+                    IOUtils.closeQuietly(ins)
+
                     if (responseCode == 1) {
                         Log.e(tag, "Connection Error on insertMetaData")
+                        tmpFile.deleteRecursively()
                         return responseCode
+                    } else if (responseCode == 2) {
+                        Log.e(tag, "Spotipy name error")
+                        tmpFile.deleteRecursively()
+
+                        return 3
                     }
 
-                } else {
+
+                } else if (!(isDeviceOnline(context as Activity))) {
                     Log.e(tag, "Connection Error")
+                    tmpFile.deleteRecursively()
+
                     return 1
+                } else {
+                    Log.d(tag, "Already exists skipping")
+                    tmpFile.deleteRecursively()
+
+                    return 2
                 }
                 Log.d(tag, "No errors")
+                tmpFile.deleteRecursively()
+
                 return 0
 
 
-            } else {
+            } else if (code == 1) {
                 Log.e(tag, "Connection error on getDownloadPath")
+
                 return 1
+            } else {
+                Log.e(tag, "Index error")
+                return 3
             }
 
         }
@@ -130,48 +196,29 @@ class SongFragment : Fragment(R.layout.fragment_song) {
             binding.songNameTextBox.isEnabled = enable
             binding.download.isEnabled = enable
         }
-        fun checkPermission(): Boolean {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Environment.isExternalStorageManager()
-            } else {
-                val write = ContextCompat.checkSelfPermission(
-                    context as Activity, Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-                val read = ContextCompat.checkSelfPermission(
-                    context as Activity, Manifest.permission.READ_EXTERNAL_STORAGE
-                )
 
-                write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED
-
-            }
-
-
-        }
 
         binding.download.setOnClickListener {
 
-            lifecycleScope.launch(Dispatchers.IO){
+            lifecycleScope.launch(Dispatchers.IO) {
 
                 val deviceInternet = isDeviceOnline(context as Activity)
-                val hasPermission = checkPermission()
 
-                if (deviceInternet && hasPermission){
+                val songName = binding.songNameEditText.text.toString()
+                if (deviceInternet && data != null && songName != "") {
                     runOnUiThread {
                         enableDisableUI(false)
                     }
+                    when (download(songName)) {
 
-
-                    val songName = binding.songNameEditText.text.toString()
-
-                    when(download(songName)){
-
-                        0->{
+                        0 -> {
                             runOnUiThread {
                                 Toast.makeText(
                                     context as Activity, "Finished", Toast.LENGTH_SHORT
                                 ).show()
                                 enableDisableUI(true)
                             }
+
 
                         }
                         1 -> {
@@ -185,22 +232,48 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                             }
 
                         }
+                        2 -> {
+                            runOnUiThread {
+                                Toast.makeText(
+                                    context as Activity, "Already downloaded", Toast.LENGTH_SHORT
+                                ).show()
+                                enableDisableUI(true)
+                            }
+
+                        }
+                        3 -> {
+                            runOnUiThread {
+                                Toast.makeText(
+                                    context as Activity,
+                                    "Please Insert a valid song name",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                enableDisableUI(true)
+                            }
+
+                        }
+
                     }
 
 
-                }
-                else if (!hasPermission){
+                } else if (data == null) {
                     runOnUiThread {
                         Toast.makeText(
-                            context as Activity, "Storage Permission Not Given", Toast.LENGTH_SHORT
+                            context as Activity, "Please choose a folder", Toast.LENGTH_SHORT
                         ).show()
                     }
 
-                }
+                } else if (songName == "") {
+                    runOnUiThread {
+                        Toast.makeText(
+                            context as Activity,
+                            "Please Insert a valid song name",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
 
 
-
-                else if (!deviceInternet){
+                } else {
                     runOnUiThread {
                         Toast.makeText(
                             context as Activity,
@@ -209,30 +282,8 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                         ).show()
                     }
                 }
-
-
-
-
-
-
-
             }
-
-
-
-
-
-
-
-
-
         }
-
-
-
-
-
-
     }
     private fun Fragment?.runOnUiThread(action: () -> Unit) {
         this ?: return

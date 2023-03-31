@@ -3,7 +3,6 @@ package com.example.spotifydownloader
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -15,11 +14,14 @@ import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 
 class MainActivity : AppCompatActivity() {
-    private val tag = "MainActivity"
 
 
     private lateinit var toggle: ActionBarDrawerToggle
     private lateinit var binding: ActivityMainBinding
+
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -46,11 +48,17 @@ class MainActivity : AppCompatActivity() {
             replace(R.id.flFragment, playListFragment)
             commit()
 
+
         }
+
 
 
         binding.navView.setNavigationItemSelectedListener {
             when (it.itemId) {
+
+
+
+
 
 
                 R.id.playlistMode -> {
@@ -111,6 +119,8 @@ class MainActivity : AppCompatActivity() {
             FFmpeg.getInstance().init(this)
         } catch (e: YoutubeDLException) {
             Log.e("error", "failed to initialize youtubedl-android", e)
+
+
         }
         //Init chaquopy
         if (!Python.isStarted()) {
@@ -128,4 +138,6 @@ class MainActivity : AppCompatActivity() {
 
         return super.onOptionsItemSelected(item)
     }
+
+
 }
