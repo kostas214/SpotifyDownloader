@@ -28,7 +28,45 @@ def songSearchSpotifyPlaylist(albumLink):
     offset = 0
     songs = []
     try:
-        tracks = sp.album_tracks(album_id=albumLink, offset=offset)
+        tracks = sp.playlist_tracks(playlist_id=albumLink, offset=offset)
+    except requests.exceptions.ConnectionError:
+        success = 1
+        print("Unable to connect to the internet")
+    except spotipy.exceptions.SpotifyException:
+        success = 2
+        print("Invalid Link")
+
+    if success == 0:
+        for key in tracks['items']:
+            songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
+        while done:
+            if len(songs) == offset + 100:
+                try:
+                    tracks = sp.playlist_tracks(playlist_id=playlistLink, offset=offset)
+                except requests.exceptions.ConnectionError:
+                    success = 1
+                    print("unable to connect to the internet")
+                for key in tracks['items']:
+                    songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
+                offset += 100
+            if len(songs) < offset + 100:
+                done = False
+
+        return songs, success
+
+    else:
+        print("unable to get songs")
+        return songs, success
+
+def songSearchSpotifyAlbum(playlistLink):
+    # Initialize Spotipy
+    # Store the songs of the playlist in a list
+    success = 0
+    done = True
+    offset = 0
+    songs = []
+    try:
+        tracks = sp.album_tracks(album_id=playlistLink, offset=offset)
     except requests.exceptions.ConnectionError:
         success = 1
         print("Unable to connect to the internet")
@@ -48,44 +86,6 @@ def songSearchSpotifyPlaylist(albumLink):
                     print("unable to connect to the internet")
                 for key in tracks['items']:
                     songs.append(f"{key['name']} {key['artists'][0]['name']}")
-                offset += 100
-            if len(songs) < offset + 100:
-                done = False
-
-        return songs, success
-
-    else:
-        print("unable to get songs")
-        return songs, success
-
-def songSearchSpotifyAlbum(playlistLink):
-    # Initialize Spotipy
-    # Store the songs of the playlist in a list
-    success = 0
-    done = True
-    offset = 0
-    songs = []
-    try:
-        tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
-    except requests.exceptions.ConnectionError:
-        success = 1
-        print("Unable to connect to the internet")
-    except spotipy.exceptions.SpotifyException:
-        success = 2
-        print("Invalid Link")
-
-    if success == 0:
-        for key in tracks['items']:
-            songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
-        while done:
-            if len(songs) == offset + 100:
-                try:
-                    tracks = sp.playlist_items(playlist_id=playlistLink, offset=offset)
-                except requests.exceptions.ConnectionError:
-                    success = 1
-                    print("unable to connect to the internet")
-                for key in tracks['items']:
-                    songs.append(f"{key['track']['name']} {key['track']['artists'][0]['name']}")
                 offset += 100
             if len(songs) < offset + 100:
                 done = False
