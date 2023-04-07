@@ -3,18 +3,17 @@
 
 
     <item
-        android:id="@+id/playlistMode"
+        android:id="@+id/playListFragment"
         android:title="Playlist Download"
         android:icon="@drawable/baseline_format_list_bulleted_24"/>
     <item
-        android:id="@+id/albumMode"
+        android:id="@+id/albumFragment"
         android:title="Album Download"
         android:icon="@drawable/baseline_album_24"/>
     <item
-        android:id="@+id/songNameMode"
+        android:id="@+id/songFragment"
         android:title="Song Name Download"
         android:icon="@drawable/baseline_music_note_24"
-        android:tooltipText="test"
         />
 
 

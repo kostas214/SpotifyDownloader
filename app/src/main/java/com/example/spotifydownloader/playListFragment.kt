@@ -17,7 +17,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.FragmentPlayListBinding
+import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
@@ -34,8 +36,33 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
     private val tag = "MainActivity"
     private var  data: Intent? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        try {
+            YoutubeDL.getInstance().init(context as Activity )
+            FFmpeg.getInstance().init(context as Activity)
+        } catch (e: YoutubeDLException) {
+            Log.e("error", "failed to initialize youtubedl-android", e)
+
+
+        }
+        //Init chaquopy
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(context as Activity))
+        }
+
         val py = Python.getInstance()
         val module = py.getModule("main")
+
+
+
+
+        //Init youtubedl-android
+
+
+
+
+
+
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // There are no request codes
@@ -76,6 +103,8 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                 toBeReturned = 3
             } else if (binding.selection4PLF.isChecked) {
                 toBeReturned = 4
+            }else if (binding.selection5PLF.isChecked) {
+                toBeReturned = 5
             }
             return toBeReturned
         }

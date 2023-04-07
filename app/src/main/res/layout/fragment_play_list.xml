@@ -177,7 +177,7 @@
     <RadioGroup
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:id="@+id/radioGroupPLF"
         tools:layout_editor_absoluteX="-16dp"
         tools:layout_editor_absoluteY="473dp"
@@ -209,6 +209,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="4" />
+        <RadioButton
+            android:id="@+id/selection5PLF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5" />
 
     </RadioGroup>
 

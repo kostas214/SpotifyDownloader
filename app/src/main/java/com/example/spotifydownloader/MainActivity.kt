@@ -8,6 +8,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import androidx.navigation.ui.setupWithNavController
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.ActivityMainBinding
@@ -30,6 +32,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val bottomNavView = binding.bottomNav
+        val navController = findNavController(R.id.fragment)
+
+        bottomNavView.setupWithNavController(navController)
+
 
         toggle = ActionBarDrawerToggle(
             this@MainActivity,
@@ -43,17 +50,8 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
 
-        val playListFragment = playListFragment()
-        val albumFragment = albumFragment()
-        val songFragment = SongFragment()
 
 
-        supportFragmentManager.beginTransaction().apply {
-            replace(R.id.flFragment, playListFragment)
-            commit()
-
-
-        }
 
 
 
@@ -65,45 +63,29 @@ class MainActivity : AppCompatActivity() {
 
 
 
-                R.id.playlistMode -> {
+                R.id.playListFragment -> {
 
 
 
-                    supportFragmentManager.beginTransaction().apply {
-                        replace(R.id.flFragment, playListFragment)
-                        addToBackStack(null)
-                        commit()
 
-
-                    }
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
 
 
                 }
-                R.id.albumMode -> {
+                R.id.albumFragment -> {
 
 
 
-                    supportFragmentManager.beginTransaction().apply {
-                        replace(R.id.flFragment, albumFragment)
-                        addToBackStack(null)
-                        commit()
 
-                    }
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
 
                 }
-                R.id.songNameMode -> {
+                R.id.songFragment -> {
 
 
 
 
-                    supportFragmentManager.beginTransaction().apply {
-                        replace(R.id.flFragment, songFragment)
-                        addToBackStack(null)
-                        commit()
 
-                    }
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
 
                 }
@@ -116,23 +98,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        //Init youtubedl-android
-        lifecycleScope.launch{
-            try {
-                YoutubeDL.getInstance().init(applicationContext )
-                FFmpeg.getInstance().init(applicationContext)
-            } catch (e: YoutubeDLException) {
-                Log.e("error", "failed to initialize youtubedl-android", e)
 
-
-            }
-            //Init chaquopy
-            if (!Python.isStarted()) {
-                Python.start(AndroidPlatform(applicationContext))
-            }
-
-
-        }
 
 
     }

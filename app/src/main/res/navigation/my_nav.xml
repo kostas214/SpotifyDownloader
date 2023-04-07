@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_nav"
+    app:startDestination="@id/playListFragment">
+
+    <fragment
+        android:id="@+id/playListFragment"
+        android:name="com.example.spotifydownloader.playListFragment"
+        android:label="fragment_play_list"
+        tools:layout="@layout/fragment_play_list" />
+    <fragment
+        android:id="@+id/albumFragment"
+        android:name="com.example.spotifydownloader.albumFragment"
+        android:label="fragment_album"
+        tools:layout="@layout/fragment_album" />
+    <fragment
+        android:id="@+id/songFragment"
+        android:name="com.example.spotifydownloader.SongFragment"
+        android:label="fragment_song"
+        tools:layout="@layout/fragment_song" />
+</navigation>

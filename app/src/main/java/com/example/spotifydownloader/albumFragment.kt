@@ -85,6 +85,8 @@ class albumFragment : Fragment(R.layout.fragment_album) {
                 toBeReturned = 3
             } else if (binding.selection4AB.isChecked) {
                 toBeReturned = 4
+            }else if (binding.selection5AB.isChecked) {
+                toBeReturned = 5
             }
             return toBeReturned
         }
