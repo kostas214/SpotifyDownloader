@@ -38,7 +38,9 @@
         android:name="com.example.spotifydownloader.downloadFragment"
         android:label="fragment_download"
         tools:layout="@layout/fragment_download" >
-        <argument android:name="songNames"
-           />
+
+        <argument
+            android:name="Data"
+            app:argType="com.example.spotifydownloader.model.Data" />
     </fragment>
 </navigation>

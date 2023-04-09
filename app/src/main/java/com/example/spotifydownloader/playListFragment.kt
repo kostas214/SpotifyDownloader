@@ -21,6 +21,7 @@ import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.FragmentPlayListBinding
+import com.example.spotifydownloader.model.Data
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
@@ -302,6 +303,11 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                                 enableDisableUI(true)
+
+                                                val data = Data(songNames as MutableList<PyObject>,radioButtonSelection())
+
+                                                val action = playListFragmentDirections.actionPlayListFragmentToDownloadFragment(data)
+                                                navController.navigate(action)
 
 
 
