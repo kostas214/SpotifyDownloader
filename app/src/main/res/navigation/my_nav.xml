@@ -9,15 +9,36 @@
         android:id="@+id/playListFragment"
         android:name="com.example.spotifydownloader.playListFragment"
         android:label="fragment_play_list"
-        tools:layout="@layout/fragment_play_list" />
+        tools:layout="@layout/fragment_play_list" >
+        <action
+            android:id="@+id/action_playListFragment_to_downloadFragment"
+            app:destination="@id/downloadFragment" />
+    </fragment>
     <fragment
         android:id="@+id/albumFragment"
         android:name="com.example.spotifydownloader.albumFragment"
         android:label="fragment_album"
-        tools:layout="@layout/fragment_album" />
+        tools:layout="@layout/fragment_album" >
+        <action
+            android:id="@+id/action_albumFragment_to_downloadFragment"
+            app:destination="@id/downloadFragment" />
+    </fragment>
     <fragment
         android:id="@+id/songFragment"
         android:name="com.example.spotifydownloader.SongFragment"
         android:label="fragment_song"
-        tools:layout="@layout/fragment_song" />
+        tools:layout="@layout/fragment_song" >
+        <action
+            android:id="@+id/action_songFragment_to_downloadFragment"
+            app:destination="@id/downloadFragment" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/downloadFragment"
+        android:name="com.example.spotifydownloader.downloadFragment"
+        android:label="fragment_download"
+        tools:layout="@layout/fragment_download" >
+        <argument android:name="songNames"
+           />
+    </fragment>
 </navigation>

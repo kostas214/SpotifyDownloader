@@ -15,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -35,7 +37,14 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
     private lateinit var binding: FragmentPlayListBinding
     private val tag = "MainActivity"
     private var  data: Intent? = null
+    private lateinit var navController:NavController
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        navController = Navigation.findNavController(view)
+
+
+
+
 
         try {
             YoutubeDL.getInstance().init(context as Activity )
@@ -52,13 +61,6 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
         val py = Python.getInstance()
         val module = py.getModule("main")
-
-
-
-
-        //Init youtubedl-android
-
-
 
 
 
@@ -80,6 +82,8 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
             resultLauncher.launch(intent)
             Log.d(tag,resultLauncher.toString())
         }
+
+        binding.progressBarPLF.progress = 0
         //Check for internet access
         fun isDeviceOnline(context: Context): Boolean {
             val connManager =
@@ -216,6 +220,7 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
             binding.selection2PLF.isEnabled = enable
             binding.selection3PLF.isEnabled = enable
             binding.selection4PLF.isEnabled = enable
+            binding.selection5PLF.isEnabled = enable
 
         }
 
@@ -266,7 +271,12 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                                 enableDisableUI(true)
+
                                             }
+
+
+
+
                                         }
                                     }
                                     1 -> {
@@ -292,6 +302,9 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                                 enableDisableUI(true)
+
+
+
                                             }
                                         }
                                     }

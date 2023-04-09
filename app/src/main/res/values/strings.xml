@@ -29,6 +29,8 @@
     <string name="songLink">Song Name</string>
     <string name="insertSongLink">Insert a Spotify song share link</string>
     <string name="downloadSong">Press Download to download the song</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

@@ -196,6 +196,7 @@ class albumFragment : Fragment(R.layout.fragment_album) {
             binding.selection2AB.isEnabled = enable
             binding.selection3AB.isEnabled = enable
             binding.selection4AB.isEnabled = enable
+            binding.selection5AB.isEnabled = enable
 
         }
         binding.downloadAB.setOnClickListener {
