@@ -12,7 +12,11 @@
         tools:layout="@layout/fragment_play_list" >
         <action
             android:id="@+id/action_playListFragment_to_downloadFragment"
-            app:destination="@id/downloadFragment" />
+            app:destination="@id/downloadFragment"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
     </fragment>
     <fragment
         android:id="@+id/albumFragment"
@@ -21,16 +25,17 @@
         tools:layout="@layout/fragment_album" >
         <action
             android:id="@+id/action_albumFragment_to_downloadFragment"
-            app:destination="@id/downloadFragment" />
+            app:destination="@id/downloadFragment"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
     </fragment>
     <fragment
         android:id="@+id/songFragment"
         android:name="com.example.spotifydownloader.SongFragment"
         android:label="fragment_song"
         tools:layout="@layout/fragment_song" >
-        <action
-            android:id="@+id/action_songFragment_to_downloadFragment"
-            app:destination="@id/downloadFragment" />
 
     </fragment>
     <fragment

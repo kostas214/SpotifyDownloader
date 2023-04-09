@@ -20,7 +20,7 @@ sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(
 Failed = []
 
 
-def songSearchSpotifyPlaylist(albumLink):
+def songSearchSpotifyPlaylist(playlistLink):
     # Initialize Spotipy
     # Store the songs of the playlist in a list
     success = 0
@@ -28,7 +28,7 @@ def songSearchSpotifyPlaylist(albumLink):
     offset = 0
     songs = []
     try:
-        tracks = sp.playlist_tracks(playlist_id=albumLink, offset=offset)
+        tracks = sp.playlist_tracks(playlist_id=playlistLink, offset=offset)
     except requests.exceptions.ConnectionError:
         success = 1
         print("Unable to connect to the internet")
@@ -58,7 +58,7 @@ def songSearchSpotifyPlaylist(albumLink):
         print("unable to get songs")
         return songs, success
 
-def songSearchSpotifyAlbum(playlistLink):
+def songSearchSpotifyAlbum(albumLink):
     # Initialize Spotipy
     # Store the songs of the playlist in a list
     success = 0
@@ -66,7 +66,7 @@ def songSearchSpotifyAlbum(playlistLink):
     offset = 0
     songs = []
     try:
-        tracks = sp.album_tracks(album_id=playlistLink, offset=offset)
+        tracks = sp.album_tracks(album_id=albumLink, offset=offset)
     except requests.exceptions.ConnectionError:
         success = 1
         print("Unable to connect to the internet")
@@ -80,7 +80,7 @@ def songSearchSpotifyAlbum(playlistLink):
         while done:
             if len(songs) == offset + 100:
                 try:
-                    tracks = sp.album_tracks(album_id=playlistLink, offset=offset)
+                    tracks = sp.album_tracks(album_id=albumLink, offset=offset)
                 except requests.exceptions.ConnectionError:
                     success = 1
                     print("unable to connect to the internet")
