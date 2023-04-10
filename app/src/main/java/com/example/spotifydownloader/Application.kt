@@ -24,7 +24,7 @@ class SpotifyDownloaderApplication : Application(){
                 withContext(Dispatchers.IO) {
                     YoutubeDL.getInstance().init(this@SpotifyDownloaderApplication)
                     FFmpeg.getInstance().init(this@SpotifyDownloaderApplication)
-                    YoutubeDL.getInstance().updateYoutubeDL(applicationContext,,)
+                    YoutubeDL.getInstance().updateYoutubeDL(applicationContext)
                 }
             } catch (e: Exception) {
                 Toast.makeText(applicationContext, "Download Library Initialization Failed", Toast.LENGTH_LONG).show()
