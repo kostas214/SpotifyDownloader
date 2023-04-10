@@ -1,6 +1,7 @@
 package com.example.spotifydownloader
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -42,30 +43,12 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
         navController = Navigation.findNavController(view)
 
 
-        val from_bottom :Animation by lazy { AnimationUtils.loadAnimation((context as Activity),R.anim.from_bottom) }
-        val from_top :Animation by lazy { AnimationUtils.loadAnimation((context as Activity),R.anim.from_top) }
 
-
-
-
-        try {
-            YoutubeDL.getInstance().init(context as Activity )
-            FFmpeg.getInstance().init(context as Activity)
-        } catch (e: YoutubeDLException) {
-            Log.e("error", "failed to initialize youtubedl-android", e)
-
-
+        if (! Python.isStarted()) {
+            Python.start( AndroidPlatform(context as Activity));
         }
-        //Init chaquopy
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(context as Activity))
-        }
-
         val py = Python.getInstance()
         val module = py.getModule("main")
-
-
-
 
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {

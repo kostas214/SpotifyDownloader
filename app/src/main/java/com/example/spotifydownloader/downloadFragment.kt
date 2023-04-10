@@ -22,6 +22,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.FragmentDownloadBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yausername.youtubedl_android.YoutubeDL
@@ -47,13 +48,22 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
         stop = true
     }
 
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+
+        if (! Python.isStarted()) {
+            Python.start( AndroidPlatform(context as Activity))
+        }
+
         binding = FragmentDownloadBinding.bind(view)
         navController =Navigation.findNavController(view)
         val py = Python.getInstance()
         module = py.getModule("main")
         var queue = 0
         bottomNav = activity?.findViewById(R.id.bottomNav)!!
+
 
         val from_top : Animation by lazy { AnimationUtils.loadAnimation((context as Activity),R.anim.from_top) }
         val from_bottom :Animation by lazy { AnimationUtils.loadAnimation((context as Activity),R.anim.from_bottom) }
@@ -237,108 +247,117 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
         }
     }
     private fun download(songName: String, data:Uri?): Int {
-        val videoInfo = module.callAttr("getDownloadPath", songName).asList().toList()
 
-        val tmpFile = File.createTempFile("Spotify downloader", null, (context as Activity).externalCacheDir)
-        tmpFile.delete()
-        tmpFile.mkdir()
-        tmpFile.deleteOnExit()
-
-        val filename = videoInfo[0].toString()
-        val ytLInk = videoInfo[1].toString()
-        val code = videoInfo[2].toInt()
-
-        if (code == 0) {
-            try {
+        try {
 
 
-                val fileLocation = "${tmpFile.absolutePath}/${filename}"
-                val request = YoutubeDLRequest(ytLInk)
+            val videoInfo = module.callAttr("getDownloadPath", songName).asList().toList()
 
-                request.addOption("--output", fileLocation)
-                request.addOption("--audio-format", "aac")
-                request.addOption("-x")
-                request.addOption("--audio-format", "mp3")
-                request.addOption("-R", "2")
-                request.addOption("--socket-timeout", "40")
+            val tmpFile = File.createTempFile(
+                "Spotify downloader",
+                null,
+                (context as Activity).externalCacheDir
+            )
+            tmpFile.delete()
+            tmpFile.mkdir()
+            tmpFile.deleteOnExit()
 
-                val documentFIle: DocumentFile =
-                    DocumentFile.fromTreeUri((context as Activity), data!!)!!
-                val dc: DocumentFile? = documentFIle.findFile(filename)
-                if (isDeviceOnline(context as Activity) && dc?.exists() == null) {
-                    try {
-                        YoutubeDL.getInstance().execute(
-                            request
-                        ) { _: Float, _: Long, _: String? -> }
+            val filename = videoInfo[0].toString()
+            val ytLInk = videoInfo[1].toString()
+            val code = videoInfo[2].toInt()
 
-                    } catch (e: YoutubeDLException) {
+            if (code == 0) {
+                try {
+
+
+                    val fileLocation = "${tmpFile.absolutePath}/${filename}"
+                    val request = YoutubeDLRequest(ytLInk)
+
+                    request.addOption("--output", fileLocation)
+                    request.addOption("--audio-format", "aac")
+                    request.addOption("-x")
+                    request.addOption("--audio-format", "mp3")
+                    request.addOption("-R", "2")
+                    request.addOption("--socket-timeout", "40")
+
+                    val documentFIle: DocumentFile =
+                        DocumentFile.fromTreeUri((context as Activity), data!!)!!
+                    val dc: DocumentFile? = documentFIle.findFile(filename)
+                    if (isDeviceOnline(context as Activity) && dc?.exists() == null) {
+                        try {
+                            YoutubeDL.getInstance().execute(
+                                request
+                            ) { _: Float, _: Long, _: String? -> }
+
+                        } catch (e: YoutubeDLException) {
+                            Log.e(tag, e.message!!)
+                            tmpFile.deleteRecursively()
+                            return 1
+                        }
+                        val responseCode =
+                            module.callAttr("insertMetaData", songName, fileLocation).toInt()
+                        var destUri = data
+                        val treeUri = Uri.parse(destUri.toString())
+                        val docId = DocumentsContract.getTreeDocumentId(treeUri)
+                        val destDir = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                        val fileTempLocation = File(fileLocation)
+                        val mimeType =
+                            MimeTypeMap.getSingleton()
+                                .getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
+                        destUri = DocumentsContract.createDocument(
+                            (context as Activity).contentResolver,
+                            destDir,
+                            mimeType,
+                            fileTempLocation.name.toString()
+                        )
+                        val ins = fileTempLocation.inputStream()
+                        val ops = (context as Activity).contentResolver.openOutputStream(destUri!!)
+                        IOUtils.copy(ins, ops)
+                        IOUtils.closeQuietly(ops)
+                        IOUtils.closeQuietly(ins)
+
+                        if (responseCode == 1) {
+                            Log.e(tag, "Connection Error on insertMetaData")
+                            tmpFile.deleteRecursively()
+                            return responseCode
+                        } else if (responseCode == 2) {
+                            Log.e(tag, "Spotipy name error")
+                            tmpFile.deleteRecursively()
+                            return 3
+                        }
+                    } else if (!(isDeviceOnline(context as Activity))) {
                         Log.e(tag, "Connection Error")
                         tmpFile.deleteRecursively()
                         return 1
-                    }
-                    val responseCode =
-                        module.callAttr("insertMetaData", songName, fileLocation).toInt()
-                    var destUri = data
-                    val treeUri = Uri.parse(destUri.toString())
-                    val docId = DocumentsContract.getTreeDocumentId(treeUri)
-                    val destDir = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
-                    val fileTempLocation = File(fileLocation)
-                    val mimeType =
-                        MimeTypeMap.getSingleton()
-                            .getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
-                    destUri = DocumentsContract.createDocument(
-                        (context as Activity).contentResolver,
-                        destDir,
-                        mimeType,
-                        fileTempLocation.name.toString()
-                    )
-                    val ins = fileTempLocation.inputStream()
-                    val ops = (context as Activity).contentResolver.openOutputStream(destUri!!)
-                    IOUtils.copy(ins, ops)
-                    IOUtils.closeQuietly(ops)
-                    IOUtils.closeQuietly(ins)
-
-                    if (responseCode == 1) {
-                        Log.e(tag, "Connection Error on insertMetaData")
+                    } else {
+                        Log.d(tag, "Already exists skipping")
                         tmpFile.deleteRecursively()
-                        return responseCode
-                    } else if (responseCode == 2) {
-                        Log.e(tag, "Spotipy name error")
-                        tmpFile.deleteRecursively()
-                        return 3
+                        binding.progressBar.incrementProgressBy(1)
+                        return 2
                     }
-                } else if (!(isDeviceOnline(context as Activity))) {
-                    Log.e(tag, "Connection Error")
-                    tmpFile.deleteRecursively()
-                    return 1
-                } else {
-                    Log.d(tag, "Already exists skipping")
-                    tmpFile.deleteRecursively()
+                    Log.d(tag, "No errors")
                     binding.progressBar.incrementProgressBy(1)
-                    return 2
+                    tmpFile.deleteRecursively()
+                    return 0
+                } catch (e: java.lang.NullPointerException) {
+                    tmpFile.deleteRecursively()
+                    return 4
                 }
-                Log.d(tag, "No errors")
-                binding.progressBar.incrementProgressBy(1)
+            } else if (code == 1) {
+                Log.e(tag, "Connection error on getDownloadPath")
                 tmpFile.deleteRecursively()
-                return 0
-            }catch (e:java.lang.NullPointerException){
+                return 1
+            } else {
+                Log.e(tag, "Not specified folder")
                 tmpFile.deleteRecursively()
-                return 4
-
+                return 3
             }
-        } else if (code == 1){
-            Log.e(tag, "Connection error on getDownloadPath")
-            tmpFile.deleteRecursively()
-            return 1
-        }
-        else {
-            Log.e(tag, "Not specified folder")
-            tmpFile.deleteRecursively()
+        }catch (e: java.lang.NullPointerException){
             return 3
         }
     }
-
 }
+
 
 
 

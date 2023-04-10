@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -24,10 +26,19 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+
+
+
         val bottomNavView = binding.bottomNav
         val navController = findNavController(R.id.fragment)
 
         bottomNavView.setupWithNavController(navController)
+
+        if (! Python.isStarted()) {
+            Python.start( AndroidPlatform(this))
+        }
+
 
 
         toggle = ActionBarDrawerToggle(
@@ -55,7 +66,9 @@ class MainActivity : AppCompatActivity() {
 
 
 
-                R.id.playListFragment -> {
+                R.id.updateYtDlp -> {
+
+
 
 
 
@@ -64,23 +77,8 @@ class MainActivity : AppCompatActivity() {
 
 
                 }
-                R.id.albumFragment -> {
 
 
-
-
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-
-                }
-                R.id.songFragment -> {
-
-
-
-
-
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-
-                }
 
 
             }

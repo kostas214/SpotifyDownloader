@@ -16,6 +16,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.FragmentSongBinding
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
@@ -36,6 +37,9 @@ class SongFragment : Fragment(R.layout.fragment_song) {
         binding = FragmentSongBinding.bind(view)
         val py = Python.getInstance()
         val module = py.getModule("main")
+        if (! Python.isStarted()) {
+            Python.start( AndroidPlatform(context as Activity));
+        }
 
         super.onViewCreated(view, savedInstanceState)
         val resultLauncher =
