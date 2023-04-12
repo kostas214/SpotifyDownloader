@@ -101,23 +101,34 @@ def songSearchSpotifyAlbum(albumLink):
 def getDownloadPath(songs):
     fileName = ""
     songUrl=""
+    imgUrl=""
+    songName =""
+    artistName=""
+    albumUrl=""
+    songName=""
 
 
     try:
+        tracks = sp.search(songs)
+        albumUrl = tracks['tracks']['items'][0]['album']['images'][1]['url']
         songSearch = VideosSearch(songs, limit=1).result()
+        artistName = tracks['tracks']['items'][0]['artists'][0]['name']
+        songName = tracks['tracks']['items'][0]['name']
+
+
         try:
 
             songId = songSearch['result'][0]['id']
         except(IndexError):
-            return fileName,songUrl,2
+            return fileName,songUrl,albumUrl,2,artistName,songName
         songUrl= "https://youtu.be/"+songId
         songTitle = songSearch['result'][0]['title']
         translation_table = str.maketrans('', '', string.punctuation)
         safeString = songTitle.translate(translation_table)
         fileName = safeString.replace(" ", "") + ".mp3"
     except(httpx.ConnectError, ChunkedEncodingError, ReadError):
-        return fileName,songUrl,1
-    return fileName,songUrl,0
+        return fileName,songUrl,albumUrl,1,songName,artistName,songName
+    return fileName,songUrl,albumUrl,0,artistName,songName
 
 
 def insertMetaData(songs,fileLocation):

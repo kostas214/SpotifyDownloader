@@ -17,17 +17,23 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.view.forEach
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.spotifydownloader.databinding.FragmentDownloadBinding
+import com.example.spotifydownloader.model.recyclerViewAdaptor
+import com.example.spotifydownloader.model.songItemData
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.util.concurrent.Executors
@@ -41,7 +47,11 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
     private val args by navArgs<downloadFragmentArgs>()
     private lateinit var module:PyObject
     private var stop = false
+    private var songItems = mutableListOf<songItemData>()
+    private var completed = 0
+    private var index = 0
 
+    private val adapter = recyclerViewAdaptor(songItems)
 
     override fun onDestroy() {
         super.onDestroy()
@@ -51,13 +61,17 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d(tag,completed.toString())
+        binding = FragmentDownloadBinding.bind(view)
 
 
         if (! Python.isStarted()) {
             Python.start( AndroidPlatform(context as Activity))
         }
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
-        binding = FragmentDownloadBinding.bind(view)
+
         navController =Navigation.findNavController(view)
         val py = Python.getInstance()
         module = py.getModule("main")
@@ -73,10 +87,15 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
         }
 
 
-        binding.cancelBtn.setOnClickListener {
+
+
+
+
+
+        binding.fabButton.setOnClickListener {
             stop = true
             Toast.makeText((context as Activity),"Stopping...",Toast.LENGTH_SHORT).show()
-            binding.cancelBtn.isEnabled = false
+            binding.fabButton.isEnabled = false
 
 
         }
@@ -93,9 +112,6 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
 
 
-
-        binding.progressBar.progress = 0
-
         if (isDeviceOnline(context as Activity)){
 
             val concurrentThreads = args.Data.concurrentDownloads
@@ -103,7 +119,9 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
             val songNamesSize = args.Data.songNames.size
 
-            binding.progressBar.max = songNamesSize
+
+
+
 
             for (i in args.Data.songNames as MutableList<PyObject>) {
 
@@ -119,8 +137,9 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
                                 when (download(songName, args.Data.folderURI)) {
                                     0 -> {
+                                        Log.d(tag,"$completed")
 
-                                        if (songNamesSize == binding.progressBar.progress) {
+                                        if (songNamesSize == completed) {
                                             runOnUiThread {
                                                 Toast.makeText(
                                                     context as Activity,
@@ -160,7 +179,8 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                                         }
                                     }
                                     2 -> {
-                                        if (songNamesSize == binding.progressBar.progress) {
+                                        Log.d(tag,"Completed $completed")
+                                        if (songNamesSize == completed) {
                                             runOnUiThread {
                                                 Toast.makeText(
                                                     context as Activity,
@@ -264,7 +284,22 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
             val filename = videoInfo[0].toString()
             val ytLInk = videoInfo[1].toString()
-            val code = videoInfo[2].toInt()
+            val imgUrl = videoInfo[2].toString()
+            val code = videoInfo[3].toInt()
+            val artistName = videoInfo[4].toString()
+            val trackName = videoInfo[5].toString()
+
+            val songData = songItemData(imgUrl,trackName,artistName,0)
+            songItems.add(songData)
+            val position = index
+            runOnUiThread {
+                adapter.notifyItemInserted(index)
+                binding.recyclerView.scrollToPosition(position)
+            }
+            index += 1
+
+
+
 
             if (code == 0) {
                 try {
@@ -283,11 +318,38 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                     val documentFIle: DocumentFile =
                         DocumentFile.fromTreeUri((context as Activity), data!!)!!
                     val dc: DocumentFile? = documentFIle.findFile(filename)
+
+
+
+
+
+
+
+
+
                     if (isDeviceOnline(context as Activity) && dc?.exists() == null) {
                         try {
+
+
+
+
+
+
                             YoutubeDL.getInstance().execute(
                                 request
-                            ) { _: Float, _: Long, _: String? -> }
+                            ) { progress: Float, _: Long, _: String? ->
+                                //Log.d(tag,"Progress is $progress and the song is $songName")
+                                if (progress >0){
+                                    songItems[position].progress = progress.toInt()
+                                    runOnUiThread {
+                                        adapter.notifyItemChanged(position)
+                                    }
+
+                                }
+
+
+
+                            }
 
                         } catch (e: YoutubeDLException) {
                             Log.e(tag, e.message!!)
@@ -332,11 +394,18 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                     } else {
                         Log.d(tag, "Already exists skipping")
                         tmpFile.deleteRecursively()
-                        binding.progressBar.incrementProgressBy(1)
+                        songItems[position].progress = 100
+                        runOnUiThread {
+                            adapter.notifyItemChanged(position)
+                        }
+                        //binding.progressBar.incrementProgressBy(1)
+                        completed += 1
                         return 2
                     }
                     Log.d(tag, "No errors")
-                    binding.progressBar.incrementProgressBy(1)
+                    //binding.progressBar.incrementProgressBy(1)
+                    completed += 1
+
                     tmpFile.deleteRecursively()
                     return 0
                 } catch (e: java.lang.NullPointerException) {

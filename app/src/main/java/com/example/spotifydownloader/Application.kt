@@ -27,7 +27,13 @@ class SpotifyDownloaderApplication : Application(){
                     YoutubeDL.getInstance().updateYoutubeDL(applicationContext)
                 }
             } catch (e: Exception) {
-                Toast.makeText(applicationContext, "Download Library Initialization Failed", Toast.LENGTH_LONG).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Download Library Initialization Failed",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
             if (!Python.isStarted()) {
                 Python.start(AndroidPlatform(this@SpotifyDownloaderApplication))

@@ -12,7 +12,7 @@
         android:icon="@drawable/baseline_album_24"/>
     <item
         android:id="@+id/songFragment"
-        android:title="Song Name Download"
+        android:title="Song Download"
         android:icon="@drawable/baseline_music_note_24"
         />
 
