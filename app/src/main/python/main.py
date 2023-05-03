@@ -138,6 +138,7 @@ def insertMetaData(songs,fileLocation):
 
 
         tracks = sp.search(songs)
+
         ArtWorkURL = tracks['tracks']['items'][0]['album']['images'][0]['url']
         songId = songSearch['result'][0]['id']
         songTitle = songSearch['result'][0]['title']

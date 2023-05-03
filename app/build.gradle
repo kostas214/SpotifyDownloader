@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.chaquo.python'
     id 'androidx.navigation.safeargs.kotlin'
     id 'kotlin-parcelize'
 
@@ -16,25 +15,7 @@ android {
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
-        python {
-            pyc{
-                src false
-            }
 
-            version "3.8"
-
-            pip{
-                install "spotipy"
-                install "youtube-search-python"
-                install "music-tag"
-                install "Pillow"
-                install "mutagen"
-
-
-
-            }
-
-        }
         applicationId "com.example.spotifydownloader"
         minSdk 24
         targetSdk 33
@@ -106,6 +87,10 @@ dependencies {
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
 
     implementation "io.coil-kt:coil:2.3.0"
+
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.5.0"
 
 
 

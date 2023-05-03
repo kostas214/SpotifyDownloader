@@ -7,8 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
+
 import com.example.spotifydownloader.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -35,9 +34,6 @@ class MainActivity : AppCompatActivity() {
 
         bottomNavView.setupWithNavController(navController)
 
-        if (! Python.isStarted()) {
-            Python.start( AndroidPlatform(this))
-        }
 
 
 

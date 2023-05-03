@@ -1,4 +1,4 @@
-package com.example.spotifydownloader
+package com.example.spotifydownloader.Fragments
 
 import android.app.Activity
 import android.content.Context
@@ -13,14 +13,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import com.chaquo.python.PyObject
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
+import com.example.spotifydownloader.R
+import com.example.spotifydownloader.SpotifyApi.SpotifyApi
+import com.example.spotifydownloader.SpotifyApi.util.Constants
 import com.example.spotifydownloader.databinding.FragmentAlbumBinding
 import com.example.spotifydownloader.model.Data
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 
 class albumFragment : Fragment(R.layout.fragment_album) {
@@ -39,14 +39,8 @@ class albumFragment : Fragment(R.layout.fragment_album) {
         super.onViewCreated(view, savedInstanceState)
         navController = Navigation.findNavController(view)
 
-        if (! Python.isStarted()) {
-            Python.start( AndroidPlatform(context as Activity));
-        }
 
 
-
-        val py = Python.getInstance()
-        val module = py.getModule("main")
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // There are no request codes
@@ -110,22 +104,74 @@ class albumFragment : Fragment(R.layout.fragment_album) {
             runOnUiThread {
                 enableDisableUI(false)
             }
-            //define variables
-            var songNames: List<PyObject>?
+
+            val songNames = mutableListOf<String>()
+            val imgUrls= mutableListOf<String>()
+            val artistNames=mutableListOf<String>()
+            val filenames= mutableListOf<String>()
+            val albumNameS= mutableListOf<String>()
+            val albumArtistNames= mutableListOf<String>()
+            val releaseDates= mutableListOf<String>()
+
+            val regex = Regex("[^A-Za-z0-9]")
+
+
 
             lifecycleScope.launch(Dispatchers.IO) {
 
+
+                val spotifyApi = SpotifyApi(clientId = Constants.CLIENT_ID, clientSecret = Constants.CLIENT_SECRET)
                 val albumLink = binding.PlaylistLinkEditTextAB.text.toString()
-                val response = async { module.callAttr("songSearchSpotifyAlbum", albumLink) }
-                val songs = response.await().asList().toList()
-                songNames = songs[0].asList()
-                val successCode = songs[1].toInt()
-                Log.d(tag, "Songs are $songNames")
-                Log.d(tag, "Code is $successCode")
+                var successCode: Int
+
+
+
+                try {
+
+                    val albumResponse = spotifyApi.getAlbum(albumLink = albumLink)
+
+                    albumResponse.tracks.items.forEach {
+                        songNames.add(it.name)
+                        imgUrls.add(albumResponse.images[0].url)
+                        artistNames.add(albumResponse.artists[0].name)
+                        filenames.add ( regex.replace(it.name, ""))
+                        albumNameS.add(albumResponse.name)
+                        albumArtistNames.add(albumResponse.artists[0].name)
+                        releaseDates.add(albumResponse.release_date)
+
+                    }
+                    successCode = 0
+
+
+                }catch (e: IOException){
+                    Log.e(tag,e.toString())
+                    successCode = 1
+
+
+                }catch (e: NullPointerException) {
+                    Log.e(tag, e.toString())
+                    successCode = 2
+                }
+
+
 
                 if (isDeviceOnline(context as Activity)  && data !=null && successCode == 0) {
 
-                    val data = Data(songNames as MutableList<PyObject>, radioButtonSelection(), data!!.data)
+                    val data = Data(
+                        concurrentDownloads =  radioButtonSelection(),
+                        folderURI = data!!.data,
+                        authToken = spotifyApi.authToken!!,
+                        songNames = songNames,
+                        imgUrls= imgUrls,
+                        artistNames = artistNames,
+                        filenames = filenames,
+                        albumNames = albumNameS,
+                        albumArtistNames = albumArtistNames,
+                        releaseDates = releaseDates,
+                        songCount = songNames.size
+
+
+                    )
                     val action = albumFragmentDirections.actionAlbumFragmentToDownloadFragment(data)
                     runOnUiThread {
                         navController.navigate(action)

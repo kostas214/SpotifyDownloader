@@ -1,4 +1,4 @@
-package com.example.spotifydownloader
+package com.example.spotifydownloader.Fragments
 
 
 import android.app.Activity
@@ -17,25 +17,24 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.view.forEach
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.chaquo.python.PyObject
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
+import com.example.spotifydownloader.R
 import com.example.spotifydownloader.databinding.FragmentDownloadBinding
 import com.example.spotifydownloader.model.recyclerViewAdaptor
 import com.example.spotifydownloader.model.songItemData
+import com.example.spotifydownloader.mp3agic.Mp3File
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.YoutubeDLRequest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.apache.commons.io.IOUtils
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
+import java.net.URL
 import java.util.concurrent.Executors
 
 
@@ -45,7 +44,6 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
     private lateinit var bottomNav :BottomNavigationView
     private lateinit var navController: NavController
     private val args by navArgs<downloadFragmentArgs>()
-    private lateinit var module:PyObject
     private var stop = false
     private var songItems = mutableListOf<songItemData>()
     private var completed = 0
@@ -65,26 +63,28 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
         binding = FragmentDownloadBinding.bind(view)
 
 
-        if (! Python.isStarted()) {
-            Python.start( AndroidPlatform(context as Activity))
-        }
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
 
         navController =Navigation.findNavController(view)
-        val py = Python.getInstance()
-        module = py.getModule("main")
         var queue = 0
         bottomNav = activity?.findViewById(R.id.bottomNav)!!
 
 
-        val from_top : Animation by lazy { AnimationUtils.loadAnimation((context as Activity),R.anim.from_top) }
-        val from_bottom :Animation by lazy { AnimationUtils.loadAnimation((context as Activity),R.anim.from_bottom) }
+        val from_top : Animation by lazy { AnimationUtils.loadAnimation((context as Activity),
+            R.anim.from_top
+        ) }
+        val from_bottom :Animation by lazy { AnimationUtils.loadAnimation((context as Activity),
+            R.anim.from_bottom
+        ) }
         bottomNav.startAnimation(from_top)
         bottomNav.menu.forEach {
             it.isEnabled = false
         }
+
+
+
 
 
 
@@ -112,32 +112,30 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
 
 
+       val songNames = args.Data.songNames
+        val songNamesSize = args.Data.songCount
+
+
+
+
         if (isDeviceOnline(context as Activity)){
 
             val concurrentThreads = args.Data.concurrentDownloads
             val executors = Executors.newFixedThreadPool(concurrentThreads)
 
-            val songNamesSize = args.Data.songNames.size
 
+            for (i in songNames) {
 
-
-
-
-            for (i in args.Data.songNames as MutableList<PyObject>) {
 
                 val worker = Runnable {
 
                     if (!executors.isShutdown) {
 
-                        val songName = i.toString()
-
-
                         if (!stop) {
 
-
-                                when (download(songName, args.Data.folderURI)) {
+                                when (download(args.Data.folderURI,songNames.indexOf(i))) {
                                     0 -> {
-                                        Log.d(tag,"$completed")
+                                        Log.d(tag, "$completed")
 
                                         if (songNamesSize == completed) {
                                             runOnUiThread {
@@ -158,7 +156,9 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
 
                                         }
                                     }
+
                                     1 -> {
+
                                         if (queue == 0) {
                                             queue += 1
                                             runOnUiThread {
@@ -178,8 +178,10 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                                             executors.shutdown()
                                         }
                                     }
+
                                     2 -> {
-                                        Log.d(tag,"Completed $completed")
+
+                                        Log.d(tag, "Completed $completed")
                                         if (songNamesSize == completed) {
                                             runOnUiThread {
                                                 Toast.makeText(
@@ -197,7 +199,9 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                                             }
                                         }
                                     }
+
                                     3 -> {
+
                                         if (queue == 0) {
                                             queue += 1
                                             runOnUiThread {
@@ -220,9 +224,12 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                                 }
 
 
+
                         }
                         else{
+
                             runOnUiThread {
+
                                 Toast.makeText(
                                     context as Activity,
                                     "Stopped",
@@ -266,165 +273,159 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
             true
         }
     }
-    private fun download(songName: String, data:Uri?): Int {
+    private fun download( data:Uri?,arrayPosition:Int): Int {
+
+
+
+
+        val tmpFile = File.createTempFile(
+            "Spotify downloader",
+            null,
+            (context as Activity).externalCacheDir
+        )
+        tmpFile.delete()
+        tmpFile.mkdir()
+        tmpFile.deleteOnExit()
+        val datas = args.Data
+
+        val songData = songItemData(datas.imgUrls[arrayPosition],datas.songNames[arrayPosition],datas.artistNames[arrayPosition],0)
+        songItems.add(songData)
+        val position = index
+        runOnUiThread {
+            adapter.notifyItemInserted(index)
+            binding.recyclerView.scrollToPosition(position)
+        }
+        index += 1
+
+
 
         try {
+            val fileLocation = "${tmpFile.absolutePath}/${datas.filenames[arrayPosition]}"
+            val request =   YoutubeDLRequest("ytsearch:${datas.songNames[arrayPosition]} ${datas.artistNames[arrayPosition]}")
 
 
-            val videoInfo = module.callAttr("getDownloadPath", songName).asList().toList()
-
-            val tmpFile = File.createTempFile(
-                "Spotify downloader",
-                null,
-                (context as Activity).externalCacheDir
-            )
-            tmpFile.delete()
-            tmpFile.mkdir()
-            tmpFile.deleteOnExit()
-
-            val filename = videoInfo[0].toString()
-            val ytLInk = videoInfo[1].toString()
-            val imgUrl = videoInfo[2].toString()
-            val code = videoInfo[3].toInt()
-            val artistName = videoInfo[4].toString()
-            val trackName = videoInfo[5].toString()
-
-            val songData = songItemData(imgUrl,trackName,artistName,0)
-            songItems.add(songData)
-            val position = index
-            runOnUiThread {
-                adapter.notifyItemInserted(index)
-                binding.recyclerView.scrollToPosition(position)
-            }
-            index += 1
+            request.addOption("--output", "${fileLocation}TMP.mp3")
+            request.addOption("-x")
+            request.addOption("--audio-format", "mp3")
+            request.addOption("-R", "2")
+            request.addOption("--socket-timeout", "40")
+            println(request.buildCommand())
 
 
+            val documentFIle: DocumentFile =
+                DocumentFile.fromTreeUri((context as Activity), data!!)!!
+            val dc: DocumentFile? = documentFIle.findFile("${datas.filenames[arrayPosition]}.mp3")
+            println("${datas.filenames[arrayPosition]}.mp3")
+            if (isDeviceOnline(context as Activity)&& dc?.exists()==null){
 
-
-            if (code == 0) {
                 try {
-
-
-                    val fileLocation = "${tmpFile.absolutePath}/${filename}"
-                    val request = YoutubeDLRequest(ytLInk)
-
-                    request.addOption("--output", fileLocation)
-                    request.addOption("--audio-format", "aac")
-                    request.addOption("-x")
-                    request.addOption("--audio-format", "mp3")
-                    request.addOption("-R", "2")
-                    request.addOption("--socket-timeout", "40")
-
-                    val documentFIle: DocumentFile =
-                        DocumentFile.fromTreeUri((context as Activity), data!!)!!
-                    val dc: DocumentFile? = documentFIle.findFile(filename)
-
-
-
-
-
-
-
-
-
-                    if (isDeviceOnline(context as Activity) && dc?.exists() == null) {
-                        try {
-
-
-
-
-
-
-                            YoutubeDL.getInstance().execute(
-                                request
-                            ) { progress: Float, _: Long, _: String? ->
-                                //Log.d(tag,"Progress is $progress and the song is $songName")
-                                if (progress >0){
-                                    songItems[position].progress = progress.toInt()
-                                    runOnUiThread {
-                                        adapter.notifyItemChanged(position)
-                                    }
-
-                                }
-
-
-
+                    YoutubeDL.getInstance().execute(
+                        request
+                    ) { progress: Float, _: Long, _: String? ->
+                        //Log.d(tag,"Progress is $progress and the song is $songName")
+                        if (progress >0){
+                            songItems[position].progress = progress.toInt()
+                            runOnUiThread {
+                                adapter.notifyItemChanged(position)
                             }
 
-                        } catch (e: YoutubeDLException) {
-                            Log.e(tag, e.message!!)
-                            tmpFile.deleteRecursively()
-                            return 1
                         }
-                        val responseCode =
-                            module.callAttr("insertMetaData", songName, fileLocation).toInt()
-                        var destUri = data
-                        val treeUri = Uri.parse(destUri.toString())
-                        val docId = DocumentsContract.getTreeDocumentId(treeUri)
-                        val destDir = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
-                        val fileTempLocation = File(fileLocation)
-                        val mimeType =
-                            MimeTypeMap.getSingleton()
-                                .getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
-                        destUri = DocumentsContract.createDocument(
-                            (context as Activity).contentResolver,
-                            destDir,
-                            mimeType,
-                            fileTempLocation.name.toString()
-                        )
-                        val ins = fileTempLocation.inputStream()
-                        val ops = (context as Activity).contentResolver.openOutputStream(destUri!!)
-                        IOUtils.copy(ins, ops)
-                        IOUtils.closeQuietly(ops)
-                        IOUtils.closeQuietly(ins)
 
-                        if (responseCode == 1) {
-                            Log.e(tag, "Connection Error on insertMetaData")
-                            tmpFile.deleteRecursively()
-                            return responseCode
-                        } else if (responseCode == 2) {
-                            Log.e(tag, "Spotipy name error")
-                            tmpFile.deleteRecursively()
-                            return 3
-                        }
-                    } else if (!(isDeviceOnline(context as Activity))) {
-                        Log.e(tag, "Connection Error")
-                        tmpFile.deleteRecursively()
-                        return 1
-                    } else {
-                        Log.d(tag, "Already exists skipping")
-                        tmpFile.deleteRecursively()
-                        songItems[position].progress = 100
-                        runOnUiThread {
-                            adapter.notifyItemChanged(position)
-                        }
-                        //binding.progressBar.incrementProgressBy(1)
-                        completed += 1
-                        return 2
+
                     }
-                    Log.d(tag, "No errors")
-                    //binding.progressBar.incrementProgressBy(1)
-                    completed += 1
 
-                    tmpFile.deleteRecursively()
-                    return 0
-                } catch (e: java.lang.NullPointerException) {
-                    tmpFile.deleteRecursively()
-                    return 4
                 }
-            } else if (code == 1) {
-                Log.e(tag, "Connection error on getDownloadPath")
+                catch (e: YoutubeDLException) {
+                    Log.e(tag, e.message!!)
+                    tmpFile.deleteRecursively()
+                    return 1
+                }
+                val mp3file = Mp3File("${fileLocation}TMP.mp3")
+                val image :ByteArray?
+                try {
+                    image = getImageBytes(datas.imgUrls[arrayPosition])
+
+                    mp3file.id3v2Tag.setAlbumImage(image,"image/jpeg")
+                    mp3file.id3v2Tag.title = datas.songNames[arrayPosition]
+                    mp3file.id3v2Tag.album = datas.albumNames[arrayPosition]
+                    mp3file.id3v2Tag.albumArtist = datas.albumArtistNames[arrayPosition]
+                    mp3file.id3v2Tag.date = datas.releaseDates[arrayPosition]
+                    mp3file.id3v2Tag.albumArtist = datas.albumArtistNames[arrayPosition]
+                    mp3file.save("$fileLocation.mp3")
+
+                }catch (e:IOException){
+                    return 1
+                }
+                var destUri = data
+                val treeUri = Uri.parse(destUri.toString())
+                val docId = DocumentsContract.getTreeDocumentId(treeUri)
+                val destDir = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
+                val fileTempLocation = File("${fileLocation}.mp3")
+                val mimeType =
+                    MimeTypeMap.getSingleton()
+                        .getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
+                destUri = DocumentsContract.createDocument(
+                    (context as Activity).contentResolver,
+                    destDir,
+                    mimeType,
+                    fileTempLocation.name.toString()
+                )
+                val ins = fileTempLocation.inputStream()
+                val ops = (context as Activity).contentResolver.openOutputStream(destUri!!)
+                IOUtils.copy(ins, ops)
+                IOUtils.closeQuietly(ops)
+                IOUtils.closeQuietly(ins)
+
+                }
+            else if (!(isDeviceOnline(context as Activity))) {
+                Log.e(tag, "Connection Error")
                 tmpFile.deleteRecursively()
                 return 1
             } else {
-                Log.e(tag, "Not specified folder")
+                Log.d(tag, "Already exists skipping")
                 tmpFile.deleteRecursively()
-                return 3
+                songItems[position].progress = 100
+                runOnUiThread {
+                    adapter.notifyItemChanged(position)
+                }
+                //binding.progressBar.incrementProgressBy(1)
+                completed += 1
+                return 2
             }
-        }catch (e: java.lang.NullPointerException){
-            return 3
+            Log.d(tag, "No errors")
+            //binding.progressBar.incrementProgressBy(1)
+            completed += 1
+            tmpFile.deleteRecursively()
+            return 0
+        }catch (e: java.lang.NullPointerException) {
+            tmpFile.deleteRecursively()
+            return 4
         }
+
+
+
+
+
+
+
+
     }
+
+        private fun getImageBytes(imageUrl: String): ByteArray? {
+            val url = URL(imageUrl)
+            val output = ByteArrayOutputStream()
+            url.openStream().use { stream ->
+                val buffer = ByteArray(10000)
+                while (true) {
+                    val bytesRead = stream.read(buffer)
+                    if (bytesRead < 0) {
+                        break
+                    }
+                    output.write(buffer, 0, bytesRead)
+                }
+            }
+            return output.toByteArray()
+        }
 }
 
 

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/playListFragment"
-        android:name="com.example.spotifydownloader.playListFragment"
+        android:name="com.example.spotifydownloader.Fragments.playListFragment"
         android:label="fragment_play_list"
         tools:layout="@layout/fragment_play_list" >
         <action
@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/albumFragment"
-        android:name="com.example.spotifydownloader.albumFragment"
+        android:name="com.example.spotifydownloader.Fragments.albumFragment"
         android:label="fragment_album"
         tools:layout="@layout/fragment_album" >
         <action
@@ -33,19 +33,37 @@
     </fragment>
     <fragment
         android:id="@+id/songFragment"
-        android:name="com.example.spotifydownloader.SongFragment"
+        android:name="com.example.spotifydownloader.Fragments.SongFragment"
         android:label="fragment_song"
         tools:layout="@layout/fragment_song" >
 
+        <action
+            android:id="@+id/action_songFragment_to_songDownloadFragment"
+            app:destination="@id/songDownloadFragment"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
     </fragment>
     <fragment
         android:id="@+id/downloadFragment"
-        android:name="com.example.spotifydownloader.downloadFragment"
+        android:name="com.example.spotifydownloader.Fragments.downloadFragment"
         android:label="fragment_download"
         tools:layout="@layout/fragment_download" >
+
 
         <argument
             android:name="Data"
             app:argType="com.example.spotifydownloader.model.Data" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/songDownloadFragment"
+        android:name="com.example.spotifydownloader.Fragments.SongDownloadFragment"
+        android:label="fragment_song_download"
+        tools:layout="@layout/fragment_song_download" >
+        <argument
+            android:name="DataSearch"
+            app:argType="com.example.spotifydownloader.model.DataSearch" />
     </fragment>
 </navigation>

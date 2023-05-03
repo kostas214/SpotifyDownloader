@@ -1,16 +1,25 @@
 package com.example.spotifydownloader.model
 
+
 import android.net.Uri
 import android.os.Parcelable
-import com.chaquo.python.PyObject
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
+
 
 @Parcelize
 data class Data(
-    val songNames:@RawValue List<PyObject>,
     val concurrentDownloads: Int,
-    val folderURI: Uri?
+    val folderURI: Uri?,
+    val authToken:String,
+    val songNames:List<String>,
+    val imgUrls:List<String>,
+    val artistNames:List<String>,
+    val filenames:List<String>,
+    val albumNames:List<String>,
+    val albumArtistNames:List<String>,
+    val releaseDates:List<String>,
+    val songCount:Int
+
 
 ):Parcelable
 

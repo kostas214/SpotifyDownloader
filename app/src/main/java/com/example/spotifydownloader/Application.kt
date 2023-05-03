@@ -2,8 +2,6 @@ package com.example.spotifydownloader
 
 import android.app.Application
 import android.widget.Toast
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import com.google.android.material.color.DynamicColors
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
@@ -24,7 +22,10 @@ class SpotifyDownloaderApplication : Application(){
                 withContext(Dispatchers.IO) {
                     YoutubeDL.getInstance().init(this@SpotifyDownloaderApplication)
                     FFmpeg.getInstance().init(this@SpotifyDownloaderApplication)
-                    YoutubeDL.getInstance().updateYoutubeDL(applicationContext)
+
+                    YoutubeDL.getInstance().updateYoutubeDL(this@SpotifyDownloaderApplication)
+                    println(YoutubeDL.getInstance().version(this@SpotifyDownloaderApplication))
+                    //YoutubeDL.getInstance().updateYoutubeDL(applicationContext)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -35,9 +36,7 @@ class SpotifyDownloaderApplication : Application(){
                     ).show()
                 }
             }
-            if (!Python.isStarted()) {
-                Python.start(AndroidPlatform(this@SpotifyDownloaderApplication))
-            }
+
 
         }
     }

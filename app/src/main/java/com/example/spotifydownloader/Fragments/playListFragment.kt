@@ -1,33 +1,27 @@
-package com.example.spotifydownloader
+package com.example.spotifydownloader.Fragments
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import com.chaquo.python.PyObject
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
+import com.example.spotifydownloader.R
+import com.example.spotifydownloader.SpotifyApi.SpotifyApi
+import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_ID
+import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_SECRET
 import com.example.spotifydownloader.databinding.FragmentPlayListBinding
 import com.example.spotifydownloader.model.Data
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.yausername.ffmpeg.FFmpeg
-import com.yausername.youtubedl_android.YoutubeDL
-import com.yausername.youtubedl_android.YoutubeDLException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 
 class playListFragment : Fragment(R.layout.fragment_play_list) {
@@ -44,11 +38,8 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
 
 
-        if (! Python.isStarted()) {
-            Python.start( AndroidPlatform(context as Activity));
-        }
-        val py = Python.getInstance()
-        val module = py.getModule("main")
+
+
 
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -123,22 +114,100 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                 enableDisableUI(false)
             }
             //define variables
-            var songNames: List<PyObject>?
+            val songNames = mutableListOf<String>()
+            val imgUrls= mutableListOf<String>()
+            val artistNames=mutableListOf<String>()
+            val filenames= mutableListOf<String>()
+            val albumNameS= mutableListOf<String>()
+            val albumArtistNames= mutableListOf<String>()
+            val releaseDates= mutableListOf<String>()
+
+            val regex = Regex("[^A-Za-z0-9]")
 
             lifecycleScope.launch(Dispatchers.IO) {
 
+                val spotifyApi = SpotifyApi(clientId = CLIENT_ID, clientSecret = CLIENT_SECRET)
                 val playlistLink = binding.PlaylistLinkEditTextPLF.text.toString()
-                val response = async { module.callAttr("songSearchSpotifyPlaylist", playlistLink) }
-                val songs = response.await().asList().toList()
-                songNames = songs[0].asList()
-                val successCode = songs[1].toInt()
-                Log.d(tag, "Songs are $songNames")
-                Log.d(tag, "Code is $successCode")
+                var successCode: Int
+
+                try {
+                    var offset = 0
+                    var done = true
+
+                    val playlistResponse = spotifyApi.getPlaylist(playlistLink = playlistLink,offset)
+                    playlistResponse.items.forEach {
+                        songNames.add(it.track.name)
+                        imgUrls.add(it.track.album.images[0].url)
+                        artistNames.add(it.track.artists[0].name)
+                        filenames.add ( regex.replace(it.track.name, ""))
+                        albumNameS.add(it.track.album.name)
+                        albumArtistNames.add(it.track.album.artists[0].name)
+                        releaseDates.add(it.track.album.release_date)
+
+                    }
+
+
+                    while (done) {
+                        if (songNames.size >= offset + 100) {
+                            offset +=100
+                            val playlistResponse2 = spotifyApi.getPlaylist(playlistLink = playlistLink,offset)
+                            playlistResponse2.items.forEach {
+                                songNames.add(it.track.name)
+                                imgUrls.add(it.track.album.images[0].url)
+                                artistNames.add(it.track.artists[0].name)
+                                filenames.add ( regex.replace(it.track.name, ""))
+                                albumNameS.add(it.track.album.name)
+                                albumArtistNames.add(it.track.album.artists[0].name)
+                                releaseDates.add(it.track.album.release_date)
+
+                            }
+
+
+                        }
+                        else{
+                            done = false
+                        }
+                    }
+                    successCode = 0
+
+                }catch (e:IOException){
+                    Log.e(tag,e.toString())
+                    successCode = 1
+
+
+                }catch (e:IllegalArgumentException) {
+                    Log.e(tag, e.toString())
+                    successCode = 2
+                }
+
+
+
+
+
+
 
                 if (isDeviceOnline(context as Activity)  && data !=null && successCode == 0) {
 
-                    val data = Data(songNames as MutableList<PyObject>, radioButtonSelection(), data!!.data)
-                    val action = playListFragmentDirections.actionPlayListFragmentToDownloadFragment(data)
+                    val data = Data(
+                        concurrentDownloads =  radioButtonSelection(),
+                        folderURI = data!!.data,
+                        authToken = spotifyApi.authToken!!,
+                        songNames = songNames,
+                        imgUrls= imgUrls,
+                        artistNames = artistNames,
+                        filenames = filenames,
+                        albumNames = albumNameS,
+                        albumArtistNames = albumArtistNames,
+                        releaseDates = releaseDates,
+                        songCount = songNames.size
+
+
+
+
+
+                    )
+                    val action =
+                        playListFragmentDirections.actionPlayListFragmentToDownloadFragment(data)
                     runOnUiThread {
 
                         navController.navigate(action)
@@ -177,6 +246,17 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
                         ).show()
                         enableDisableUI(true)
                     }
+                }
+                else{
+                    runOnUiThread {
+                        Toast.makeText(
+                            context as Activity,
+                            "Connection Error try again later",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        enableDisableUI(true)
+                    }
+
                 }
             }
             Log.d(tag, "END")
