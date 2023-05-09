@@ -223,6 +223,8 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
             request.addOption("--audio-format", "mp3")
             request.addOption("-R", "2")
             request.addOption("--socket-timeout", "40")
+            request.addOption("--downloader", "libaria2c.so");
+            request.addOption("--external-downloader-args", "aria2c:\"--summary-interval=1\"");
             println(request.buildCommand())
 
 
@@ -235,14 +237,15 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                 try {
                     YoutubeDL.getInstance().execute(
                         request
-                    ) { progress: Float, _: Long, _: String? ->
+                    ) { _: Float, _: Long, status: String? ->
+                        Log.d(tag,status!!)
+                        if (binding.progressBar.progress<=90) {
 
-                        if(progress>0){
                             runOnUiThread {
-                                binding.progressBar.progress = progress.toInt()
+                                binding.progressBar.incrementProgressBy(6)
                             }
                         }
-                        //Log.d(tag,"Progress is $progress and the song is $songName")
+
 
 
 
@@ -289,6 +292,9 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                 IOUtils.copy(ins, ops)
                 IOUtils.closeQuietly(ops)
                 IOUtils.closeQuietly(ins)
+                runOnUiThread {
+                    binding.progressBar.incrementProgressBy(10)
+                }
 
             }
             else if (!(isDeviceOnline(context as Activity))) {

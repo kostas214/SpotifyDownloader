@@ -3,6 +3,7 @@ package com.example.spotifydownloader
 import android.app.Application
 import android.widget.Toast
 import com.google.android.material.color.DynamicColors
+import com.yausername.aria2c.Aria2c
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ class SpotifyDownloaderApplication : Application(){
                 withContext(Dispatchers.IO) {
                     YoutubeDL.getInstance().init(this@SpotifyDownloaderApplication)
                     FFmpeg.getInstance().init(this@SpotifyDownloaderApplication)
+                    Aria2c.getInstance().init(this@SpotifyDownloaderApplication);
 
                     YoutubeDL.getInstance().updateYoutubeDL(this@SpotifyDownloaderApplication)
                     println(YoutubeDL.getInstance().version(this@SpotifyDownloaderApplication))

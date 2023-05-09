@@ -20,7 +20,7 @@ android {
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "1.1.1"
+        versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,6 +51,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
 }
 
 dependencies {
@@ -68,8 +73,9 @@ dependencies {
 
 
     //YoutubeDl
-    implementation "com.github.yausername.youtubedl-android:library:3a0252d88b4ae573068c63c3d08fc52c66102d55"
-    implementation "com.github.yausername.youtubedl-android:ffmpeg:3a0252d88b4ae573068c63c3d08fc52c66102d55"
+    implementation 'com.github.yausername.youtubedl-android:library:-SNAPSHOT'
+    implementation 'com.github.yausername.youtubedl-android:ffmpeg:-SNAPSHOT' // Optional
+    implementation 'com.github.yausername.youtubedl-android:aria2c:-SNAPSHOT'
 
     //Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'

@@ -109,18 +109,24 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                     val textInBox = binding.songNameEditText.text.toString()
                     val response =  spotifyApi.getSearch(textInBox)
 
-                    val searchResult = response.tracks.items[0]
-                    val regex = Regex("[^A-Za-z0-9]")
 
 
-                    songName = searchResult.name
-                    imgUrl = searchResult.album.images[0].url
-                    artistName = searchResult.artists[0].name
-                    filename = regex.replace(searchResult.name, "")
-                    albumName = searchResult.album.name
-                    albumArtistName = searchResult.album.artists[0].name
-                    releaseDate = searchResult.album.release_date
-                    succesCode = 0
+                    if (response.tracks.items.size !=0) {
+                        val searchResult = response.tracks.items[0]
+                        val regex = Regex("[^A-Za-z0-9]")
+                        songName = searchResult.name
+                        imgUrl = searchResult.album.images[0].url
+                        artistName = searchResult.artists[0].name
+                        filename = regex.replace(searchResult.name, "")
+                        albumName = searchResult.album.name
+                        albumArtistName = searchResult.album.artists[0].name
+                        releaseDate = searchResult.album.release_date
+                        succesCode = 0
+                    }
+                    else{
+                        succesCode = 2
+                    }
+                    
 
 
                 }catch (e:IOException){

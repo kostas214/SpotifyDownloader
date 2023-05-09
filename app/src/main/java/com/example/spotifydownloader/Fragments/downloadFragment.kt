@@ -309,6 +309,13 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
             request.addOption("--audio-format", "mp3")
             request.addOption("-R", "2")
             request.addOption("--socket-timeout", "40")
+
+            request.addOption("--downloader", "libaria2c.so")
+            request.addOption("--external-downloader-args", "aria2c:\"--summary-interval=1\"");
+
+
+
+
             println(request.buildCommand())
 
 
@@ -321,15 +328,18 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                 try {
                     YoutubeDL.getInstance().execute(
                         request
-                    ) { progress: Float, _: Long, _: String? ->
-                        //Log.d(tag,"Progress is $progress and the song is $songName")
-                        if (progress >0){
-                            songItems[position].progress = progress.toInt()
+                    ) { _: Float, _: Long, status: String? ->
+
+                        Log.d(tag,status!!)
+
+                        if (songItems[position].progress<=90) {
+                            songItems[position].progress += 6
                             runOnUiThread {
                                 adapter.notifyItemChanged(position)
                             }
-
                         }
+
+
 
 
                     }
@@ -356,6 +366,7 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                 }catch (e:IOException){
                     return 1
                 }
+
                 var destUri = data
                 val treeUri = Uri.parse(destUri.toString())
                 val docId = DocumentsContract.getTreeDocumentId(treeUri)
@@ -375,6 +386,12 @@ class downloadFragment : Fragment(R.layout.fragment_download) {
                 IOUtils.copy(ins, ops)
                 IOUtils.closeQuietly(ops)
                 IOUtils.closeQuietly(ins)
+                songItems[position].progress += 10
+                runOnUiThread {
+                    adapter.notifyItemChanged(position)
+                }
+
+
 
                 }
             else if (!(isDeviceOnline(context as Activity))) {
