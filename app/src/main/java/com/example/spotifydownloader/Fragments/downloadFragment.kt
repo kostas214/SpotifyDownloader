@@ -23,8 +23,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.spotifydownloader.R
 import com.example.spotifydownloader.databinding.FragmentDownloadBinding
-import com.example.spotifydownloader.model.recyclerViewAdaptor
-import com.example.spotifydownloader.model.songItemData
+import com.example.spotifydownloader.rvAdaptors.recyclerViewAdaptor
+import com.example.spotifydownloader.rvData.songItemData
 import com.example.spotifydownloader.mp3agic.Mp3File
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yausername.youtubedl_android.YoutubeDL

@@ -43,7 +43,6 @@ interface SpotifyAPI {
         @HeaderMap headers: Map<String,String>,
         @Query("q") searchQuery:String,
         @Query("type")type:String = "track",
-        @Query("limit")limit:Int = 1
 
 
     ):Response<Search>

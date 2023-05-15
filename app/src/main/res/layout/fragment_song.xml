@@ -58,7 +58,7 @@
         app:layout_constraintBottom_toBottomOf="@id/songName"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@id/songName"
-        app:srcCompat="@android:drawable/ic_menu_share" />
+        app:srcCompat="@drawable/baseline_search_24" />
 
     <TextView
         android:id="@+id/songName"
@@ -82,17 +82,43 @@
         android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
-        android:hint="@string/songLink"
+        android:hint="@string/songName"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/songName"
 
 
-        app:startIconDrawable="@drawable/ic_baseline_insert_link_24">
+        app:startIconDrawable="@drawable/baseline_content_paste_24">
 
         <com.google.android.material.textfield.TextInputEditText
 
             android:id="@+id/songNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textUri"
+            android:textColorHint="#546E7A"
+            tools:ignore="TextContrastCheck" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/artistNameTextBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="20dp"
+        android:hint="@string/artistName"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/songNameTextBox"
+
+
+        app:startIconDrawable="@drawable/baseline_content_paste_24">
+
+        <com.google.android.material.textfield.TextInputEditText
+
+            android:id="@+id/artistNameEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textUri"
@@ -110,7 +136,7 @@
         android:layout_marginTop="20dp"
         android:text="@string/downloadSong"
         app:layout_constraintLeft_toRightOf="@id/startIcon"
-        app:layout_constraintTop_toBottomOf="@id/songNameTextBox"
+        app:layout_constraintTop_toBottomOf="@id/artistNameTextBox"
 
         />
 

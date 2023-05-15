@@ -15,16 +15,14 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.spotifydownloader.R
 import com.example.spotifydownloader.SpotifyApi.SpotifyApi
+import com.example.spotifydownloader.SpotifyApi.model.Search.Item
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_ID
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_SECRET
 import com.example.spotifydownloader.databinding.FragmentSongBinding
-import com.example.spotifydownloader.model.DataSearch
+import com.example.spotifydownloader.parcels.ItemListData
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.lang.NullPointerException
-
 
 
 class SongFragment : Fragment(R.layout.fragment_song) {
@@ -91,14 +89,9 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                 runOnUiThread {
                     enableDisableUI(false)
                 }
-                var songName =""
-                var imgUrl =""
-                var artistName = ""
-                var filename = ""
-                var albumName = ""
-                var albumArtistName = ""
-                var releaseDate = ""
-                var succesCode :Int
+                var succesCode = 0
+                val ItemListObject = mutableListOf<Item>()
+
 
 
 
@@ -106,21 +99,16 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                 try {
 
 
-                    val textInBox = binding.songNameEditText.text.toString()
+                    val textInBox = "${binding.songNameEditText.text.toString()} ${binding.artistNameEditText.text.toString()}"
                     val response =  spotifyApi.getSearch(textInBox)
 
 
 
                     if (response.tracks.items.size !=0) {
-                        val searchResult = response.tracks.items[0]
-                        val regex = Regex("[^A-Za-z0-9]")
-                        songName = searchResult.name
-                        imgUrl = searchResult.album.images[0].url
-                        artistName = searchResult.artists[0].name
-                        filename = regex.replace(searchResult.name, "")
-                        albumName = searchResult.album.name
-                        albumArtistName = searchResult.album.artists[0].name
-                        releaseDate = searchResult.album.release_date
+                        response.tracks.items.forEach {
+                            ItemListObject.add(it)
+                        }
+
                         succesCode = 0
                     }
                     else{
@@ -149,6 +137,7 @@ class SongFragment : Fragment(R.layout.fragment_song) {
 
 
                     if (isDeviceOnline(context as Activity)&&data!=null&& succesCode== 0){
+                        /*
                         val dataToBeSent = DataSearch(
                             songName = songName,
                             imgUrl = imgUrl,
@@ -159,7 +148,9 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                             releaseDate = releaseDate,
                             folderUri = data!!.data
                         )
-                        val action = SongFragmentDirections.actionSongFragmentToSongDownloadFragment(dataToBeSent)
+
+                         */
+                        val action = SongFragmentDirections.actionSongFragmentToSelectSongFragment2(ItemListData(ItemListObject.toList(),data!!.data))
                         runOnUiThread {
                             enableDisableUI(true)
                             navController.navigate(action)

@@ -1,4 +1,4 @@
-package com.example.spotifydownloader.model
+package com.example.spotifydownloader.rvAdaptors
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.spotifydownloader.R
+import com.example.spotifydownloader.rvData.songItemData
 
 class recyclerViewAdaptor (private val songData: List<songItemData>)
     :RecyclerView.Adapter<recyclerViewAdaptor.ViewHolder>() {
@@ -40,7 +41,7 @@ class recyclerViewAdaptor (private val songData: List<songItemData>)
         holder.songCoverImage.load(recyclerViewAdaptor.imageUrl)
 
 
-        if (recyclerViewAdaptor.songName.length>19) {
+        if (recyclerViewAdaptor.songName.length>24) {
             holder.songTitle.text = recyclerViewAdaptor.songName.take(17).plus("...")
         }
         else{

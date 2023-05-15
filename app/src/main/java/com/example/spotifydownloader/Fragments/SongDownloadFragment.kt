@@ -23,7 +23,7 @@ import androidx.navigation.fragment.navArgs
 import coil.load
 import com.example.spotifydownloader.R
 import com.example.spotifydownloader.databinding.FragmentSongDownloadBinding
-import com.example.spotifydownloader.model.songItemData
+import com.example.spotifydownloader.rvData.songItemData
 import com.example.spotifydownloader.mp3agic.Mp3File
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.yausername.youtubedl_android.YoutubeDL
@@ -42,12 +42,13 @@ import java.net.URL
 class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
     private var fragmentSongDownload: FragmentSongDownloadBinding? = null
     private val tag = "MainActivity"
-    private lateinit var bottomNav : BottomNavigationView
     private lateinit var navController: NavController
     private val args by navArgs<SongDownloadFragmentArgs>()
     private var stop = false
     private var songItems = mutableListOf<songItemData>()
     private lateinit var binding:FragmentSongDownloadBinding
+    private lateinit var bottomNav : BottomNavigationView
+
 
 
 
@@ -63,17 +64,10 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
         bottomNav = activity?.findViewById(R.id.bottomNav)!!
 
 
-        val from_top : Animation by lazy { AnimationUtils.loadAnimation((context as Activity),
-            R.anim.from_top
-        ) }
+
         val from_bottom : Animation by lazy { AnimationUtils.loadAnimation((context as Activity),
             R.anim.from_bottom
         ) }
-        bottomNav.startAnimation(from_top)
-        bottomNav.menu.forEach {
-            it.isEnabled = false
-        }
-
         val callback = object  : OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
                 Toast.makeText((context as Activity),"Stopping...",Toast.LENGTH_SHORT).show()
@@ -100,6 +94,7 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                             Toast.LENGTH_SHORT
                         ).show()
                         navController.popBackStack()
+                        navController.popBackStack()
                         bottomNav.startAnimation(from_bottom)
                         bottomNav.menu.forEach {
                             it.isEnabled = true
@@ -116,6 +111,7 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                             "Internet Connection Error",
                             Toast.LENGTH_SHORT
                         ).show()
+                        navController.popBackStack()
                         navController.popBackStack()
                         bottomNav.startAnimation(from_bottom)
                         bottomNav.menu.forEach {
@@ -134,6 +130,7 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                             "Finished",
                             Toast.LENGTH_SHORT
                         ).show()
+                        navController.popBackStack()
                         navController.popBackStack()
                         bottomNav.startAnimation(from_bottom)
                         bottomNav.menu.forEach {

@@ -18,7 +18,7 @@ import com.example.spotifydownloader.SpotifyApi.SpotifyApi
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_ID
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_SECRET
 import com.example.spotifydownloader.databinding.FragmentPlayListBinding
-import com.example.spotifydownloader.model.Data
+import com.example.spotifydownloader.parcels.Data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException

@@ -241,7 +241,7 @@ class SpotifyApi(private val clientId: String, private val clientSecret: String,
     }
 
 
-    suspend fun getSearch(query:String):Search{
+    suspend fun getSearch(query:String ):Search{
         if (authToken == null){
             getAuthTokenOrRefresh(
                 clientId = clientId,

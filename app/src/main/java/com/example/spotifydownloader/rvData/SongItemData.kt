@@ -1,4 +1,4 @@
-package com.example.spotifydownloader.model
+package com.example.spotifydownloader.rvData
 
 
 data class songItemData(val imageUrl : String,

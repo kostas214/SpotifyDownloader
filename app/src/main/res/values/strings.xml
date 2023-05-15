@@ -8,9 +8,9 @@
     <string name="progress_bar">Progress bar</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
-    <string name="permissions">Save location</string>
+    <string name="permissions">Choose Folder</string>
     <string name="download">Download</string>
-    <string name="StoragePermission">Select save location</string>
+    <string name="StoragePermission">Select a folder to save the downloaded song</string>
 
 
     <!--Playlist Fragment -->
@@ -26,12 +26,14 @@
 
 
     <!--Song Fragment -->
-    <string name="songLink">Song Name</string>
-    <string name="insertSongLink">Insert a Spotify song share link</string>
+    <string name="songName">Song name</string>
+    <string name="artistName">Artist name (Not required)</string>
+    <string name="insertSongLink">Insert the song Name and artist Name</string>
     <string name="downloadSong">Press Download to download the song</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="update_download_library">Update Download Library</string>
+    <string name="select_song_to_be_downloaded">Select song to be downloaded</string>
 
 
 </resources>

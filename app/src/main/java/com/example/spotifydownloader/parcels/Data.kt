@@ -1,4 +1,4 @@
-package com.example.spotifydownloader.model
+package com.example.spotifydownloader.parcels
 
 
 import android.net.Uri
