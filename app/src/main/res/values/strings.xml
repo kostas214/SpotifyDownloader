@@ -10,7 +10,8 @@
     <string name="close">Close</string>
     <string name="permissions">Choose Folder</string>
     <string name="download">Download</string>
-    <string name="StoragePermission">Select a folder to save the downloaded song</string>
+    <string name="StoragePermission">Select a folder to save the downloaded songs</string>
+    <string name="StoragePermissionForSingleSong">Select a folder to save the downloaded songs</string>
 
 
     <!--Playlist Fragment -->
@@ -30,6 +31,12 @@
     <string name="artistName">Artist name (Not required)</string>
     <string name="insertSongLink">Insert the song Name and artist Name</string>
     <string name="downloadSong">Press Download to download the song</string>
+
+    <!--Track Fragment -->
+    <string name="trackLink">Track Link</string>
+    <string name="insertTrackLink">Insert a Spotify track share link</string>
+    <string name="downloadTrack">Press Download to download the track</string>
+
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="update_download_library">Update Download Library</string>

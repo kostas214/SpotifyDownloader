@@ -159,7 +159,6 @@ class SongFragment : Fragment(R.layout.fragment_song) {
 
                         val itemListData = ItemListData(Items= ItemListObject.toList(), folderUri = folderUri)
                         val action = SongFragmentDirections.actionSongFragmentToSelectSongFragment(itemListData)
-                        println(itemListData.Items[0])
                         runOnUiThread {
                             enableDisableUI(true)
                             navController.navigate(action)

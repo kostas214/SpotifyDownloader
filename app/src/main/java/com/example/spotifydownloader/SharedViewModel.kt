@@ -10,6 +10,7 @@ import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_
 class SharedViewModel:ViewModel() {
     var playlistLink = MutableLiveData<String>()
     var albumLink = MutableLiveData<String>()
+    var trackLink = MutableLiveData<String>()
     var folderUri = MutableLiveData<Uri?>()
     val spotifyApi = SpotifyApi(CLIENT_ID, CLIENT_SECRET)
 }

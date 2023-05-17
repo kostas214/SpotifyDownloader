@@ -15,7 +15,8 @@ data class DataSearch(
     val albumName:String,
     val albumArtistName:String,
     val releaseDate:String,
-    val folderUri: Uri?
+    val folderUri: Uri?,
+    val isSearch:Boolean
 
 
 

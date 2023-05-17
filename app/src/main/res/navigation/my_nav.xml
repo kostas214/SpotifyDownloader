@@ -83,4 +83,17 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"/>
     </fragment>
+    <fragment
+        android:id="@+id/trackFragment"
+        android:name="com.example.spotifydownloader.Fragments.trackFragment"
+        android:label="fragment_track"
+        tools:layout="@layout/fragment_track" >
+        <action
+            android:id="@+id/action_trackFragment_to_songDownloadFragment"
+            app:destination="@id/songDownloadFragment"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+    </fragment>
 </navigation>

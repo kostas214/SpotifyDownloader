@@ -4,16 +4,21 @@
 
     <item
         android:id="@+id/playListFragment"
-        android:title="Playlist Download"
+        android:title="Playlist"
         android:icon="@drawable/baseline_format_list_bulleted_24"/>
     <item
         android:id="@+id/albumFragment"
-        android:title="Album Download"
+        android:title="Album "
         android:icon="@drawable/baseline_album_24"/>
     <item
-        android:id="@+id/songFragment"
-        android:title="Song Search"
+        android:id="@+id/trackFragment"
+        android:title="Song"
         android:icon="@drawable/baseline_music_note_24"
+        />
+    <item
+        android:id="@+id/songFragment"
+        android:title="Search"
+        android:icon="@drawable/baseline_search_24"
         />
 
 

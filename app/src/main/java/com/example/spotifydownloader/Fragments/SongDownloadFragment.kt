@@ -45,7 +45,6 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
     private lateinit var navController: NavController
     private val args by navArgs<SongDownloadFragmentArgs>()
     private var stop = false
-    private var songItems = mutableListOf<songItemData>()
     private lateinit var binding:FragmentSongDownloadBinding
     private lateinit var bottomNav : BottomNavigationView
 
@@ -93,8 +92,12 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                             "Finished",
                             Toast.LENGTH_SHORT
                         ).show()
-                        navController.popBackStack()
-                        navController.popBackStack()
+                        if (args.DataSearch.isSearch) {
+                            navController.popBackStack()
+                            navController.popBackStack()
+                        }else{
+                            navController.popBackStack()
+                        }
                         bottomNav.startAnimation(from_bottom)
                         bottomNav.menu.forEach {
                             it.isEnabled = true
@@ -111,8 +114,12 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                             "Internet Connection Error",
                             Toast.LENGTH_SHORT
                         ).show()
-                        navController.popBackStack()
-                        navController.popBackStack()
+                        if (args.DataSearch.isSearch) {
+                            navController.popBackStack()
+                            navController.popBackStack()
+                        }else{
+                            navController.popBackStack()
+                        }
                         bottomNav.startAnimation(from_bottom)
                         bottomNav.menu.forEach {
                             it.isEnabled = true
@@ -130,8 +137,12 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                             "Finished",
                             Toast.LENGTH_SHORT
                         ).show()
-                        navController.popBackStack()
-                        navController.popBackStack()
+                        if (args.DataSearch.isSearch) {
+                            navController.popBackStack()
+                            navController.popBackStack()
+                        }else{
+                            navController.popBackStack()
+                        }
                         bottomNav.startAnimation(from_bottom)
                         bottomNav.menu.forEach {
                             it.isEnabled = true
@@ -220,8 +231,8 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
             request.addOption("--audio-format", "mp3")
             request.addOption("-R", "2")
             request.addOption("--socket-timeout", "40")
-            request.addOption("--downloader", "libaria2c.so");
-            request.addOption("--external-downloader-args", "aria2c:\"--summary-interval=1\"");
+            request.addOption("--downloader", "libaria2c.so")
+            request.addOption("--external-downloader-args", "aria2c:\"--summary-interval=1\"")
             println(request.buildCommand())
 
 
@@ -270,6 +281,7 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                 }catch (e: IOException){
                     return 1
                 }
+
                 var destUri = data
                 val treeUri = Uri.parse(destUri.toString())
                 val docId = DocumentsContract.getTreeDocumentId(treeUri)
@@ -277,7 +289,7 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                 val fileTempLocation = File("${fileLocation}.mp3")
                 val mimeType =
                     MimeTypeMap.getSingleton()
-                        .getMimeTypeFromExtension(fileTempLocation.extension) ?: "*/*"
+                        .getMimeTypeFromExtension(fileTempLocation.extension) ?:"*/*"
                 destUri = DocumentsContract.createDocument(
                     (context as Activity).contentResolver,
                     destDir,
@@ -292,6 +304,7 @@ class SongDownloadFragment : Fragment(R.layout.fragment_song_download) {
                 runOnUiThread {
                     binding.progressBar.incrementProgressBy(10)
                 }
+
 
             }
             else if (!(isDeviceOnline(context as Activity))) {

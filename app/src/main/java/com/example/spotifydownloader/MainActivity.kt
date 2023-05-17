@@ -4,12 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.PackageManagerCompat.LOG_TAG
 import androidx.core.view.GravityCompat
+import androidx.core.view.forEach
 import androidx.core.view.get
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
@@ -21,6 +23,7 @@ import com.example.spotifydownloader.SpotifyApi.SpotifyApi
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_ID
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_SECRET
 import com.example.spotifydownloader.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private val tag = "MainActivity"
     private val sharedViewModel: SharedViewModel by viewModels()
     private lateinit var navController:NavController
+    private lateinit var bottomNavView:BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -42,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        val bottomNavView = binding.bottomNav
+        bottomNavView = binding.bottomNav
         navController = findNavController(R.id.fragment)
 
 
@@ -91,14 +95,36 @@ class MainActivity : AppCompatActivity() {
                     "playlist"->{
                         sharedViewModel.playlistLink.value = it
                         navController.navigate(R.id.playListFragment)
+                        bottomNavView.forEach {
+
+                                it.isEnabled = true
+                        }
+                        bottomNavView.visibility = View.GONE
+
+
                     }
                     "album"->{
                         sharedViewModel.albumLink.value = it
                         navController.navigate(R.id.albumFragment)
+                        bottomNavView.forEach {
 
+                            it.isEnabled = true
+                        }
+                        bottomNavView.visibility = View.GONE
 
 
                     }
+                    "track"->{
+                        sharedViewModel.trackLink.value= it
+                        navController.navigate(R.id.trackFragment)
+                        bottomNavView.forEach {
+
+                            it.isEnabled = true
+                        }
+                        bottomNavView.visibility = View.GONE
+                    }
+
+
 
                     else -> {
                         Toast.makeText(this,"Invalid Link",Toast.LENGTH_SHORT).show()
