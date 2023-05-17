@@ -4,16 +4,22 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.spotifydownloader.R
+import com.example.spotifydownloader.SharedViewModel
 import com.example.spotifydownloader.SpotifyApi.SpotifyApi
 import com.example.spotifydownloader.SpotifyApi.model.Search.Item
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_ID
@@ -30,11 +36,18 @@ class SongFragment : Fragment(R.layout.fragment_song) {
     private var data: Intent? = null
     private val tag = "MainActivity"
     private lateinit var navController: NavController
+    private val sharedViewModel : SharedViewModel by activityViewModels()
+    private var folderUri: Uri?=null
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding = FragmentSongBinding.bind(view)
         super.onViewCreated(view, savedInstanceState)
+
+
+
+
+
 
 
         navController = Navigation.findNavController(view)
@@ -43,6 +56,7 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                 if (result.resultCode == Activity.RESULT_OK) {
                     // There are no request codes
                     data = result.data
+                    sharedViewModel.folderUri.value = data?.data
                     if (data != null) {
                         Log.d(tag, data?.data.toString())
                         Log.d(tag, (context as Activity).externalCacheDir.toString())
@@ -78,12 +92,17 @@ class SongFragment : Fragment(R.layout.fragment_song) {
             binding.perms.isEnabled = enable
             binding.songNameTextBox.isEnabled = enable
             binding.download.isEnabled = enable
+            binding.artistNameTextBox.isEnabled = enable
         }
-        val spotifyApi = SpotifyApi(clientId = CLIENT_ID, clientSecret = CLIENT_SECRET)
+        val spotifyApi = sharedViewModel.spotifyApi
 
 
+        sharedViewModel.folderUri.observe(viewLifecycleOwner , Observer {
+            folderUri1 -> folderUri = folderUri1
+        })
 
         binding.download.setOnClickListener {
+
 
             lifecycleScope.launch(Dispatchers.IO) {
                 runOnUiThread {
@@ -114,7 +133,7 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                     else{
                         succesCode = 2
                     }
-                    
+
 
 
                 }catch (e:IOException){
@@ -136,21 +155,11 @@ class SongFragment : Fragment(R.layout.fragment_song) {
 
 
 
-                    if (isDeviceOnline(context as Activity)&&data!=null&& succesCode== 0){
-                        /*
-                        val dataToBeSent = DataSearch(
-                            songName = songName,
-                            imgUrl = imgUrl,
-                            artistName = artistName,
-                            filename = filename,
-                            albumName = albumName,
-                            albumArtistName = albumArtistName,
-                            releaseDate = releaseDate,
-                            folderUri = data!!.data
-                        )
+                    if (isDeviceOnline(context as Activity)&&folderUri!=null&& succesCode== 0){
 
-                         */
-                        val action = SongFragmentDirections.actionSongFragmentToSelectSongFragment2(ItemListData(ItemListObject.toList(),data!!.data))
+                        val itemListData = ItemListData(Items= ItemListObject.toList(), folderUri = folderUri)
+                        val action = SongFragmentDirections.actionSongFragmentToSelectSongFragment(itemListData)
+                        println(itemListData.Items[0])
                         runOnUiThread {
                             enableDisableUI(true)
                             navController.navigate(action)
@@ -169,6 +178,8 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                                 "Connection Error try again later",
                                 Toast.LENGTH_SHORT
                             ).show()
+
+
                             enableDisableUI(true)
                         }
 
@@ -184,23 +195,30 @@ class SongFragment : Fragment(R.layout.fragment_song) {
                     }
 
 
-                    else if (data == null){
+                    else if (folderUri == null){
                         runOnUiThread {
                             Toast.makeText(
                                 context as Activity, "Please choose a folder", Toast.LENGTH_SHORT
                             ).show()
                             enableDisableUI(true)
                         }
-                    } else {
+                    }
+
+                    else {
                         runOnUiThread {
+
                             Toast.makeText(
                                 context as Activity,
                                 "Connection Error try again later",
                                 Toast.LENGTH_SHORT
                             ).show()
+
+
                             enableDisableUI(true)
                         }
                     }
+
+
 
 
 

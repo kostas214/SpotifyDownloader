@@ -1,7 +1,6 @@
 package com.example.spotifydownloader.SpotifyApi.model.Search
 
 data class Album(
-    val album_group: String,
     val album_type: String,
     val artists: List<ArtistX>,
     val external_urls: ExternalUrlsXXX,

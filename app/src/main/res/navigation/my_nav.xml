@@ -37,12 +37,13 @@
         android:label="fragment_song"
         tools:layout="@layout/fragment_song" >
         <action
-            android:id="@+id/action_songFragment_to_selectSongFragment2"
+            android:id="@+id/action_songFragment_to_selectSongFragment"
             app:destination="@id/selectSongFragment"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"
             app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"/>
+            app:exitAnim="@anim/slide_out_left"
+            />
     </fragment>
     <fragment
         android:id="@+id/downloadFragment"
@@ -61,12 +62,10 @@
         android:name="com.example.spotifydownloader.Fragments.SongDownloadFragment"
         android:label="fragment_song_download"
         tools:layout="@layout/fragment_song_download" >
+
         <argument
             android:name="DataSearch"
             app:argType="com.example.spotifydownloader.parcels.DataSearch" />
-        <action
-            android:id="@+id/action_songDownloadFragment_to_songFragment"
-            app:destination="@id/songFragment" />
     </fragment>
     <fragment
         android:id="@+id/selectSongFragment"
@@ -77,7 +76,7 @@
             android:name="ItemListData"
             app:argType="com.example.spotifydownloader.parcels.ItemListData" />
         <action
-            android:id="@+id/action_selectSongFragment_to_songDownloadFragment2"
+            android:id="@+id/action_selectSongFragment_to_songDownloadFragment"
             app:destination="@id/songDownloadFragment"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"

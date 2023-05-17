@@ -9,5 +9,5 @@ import kotlinx.parcelize.RawValue
 @Parcelize
 data class ItemListData(
      var Items : @RawValue List<Item>,
-     var folderUri: Uri?
+     var folderUri:  Uri?
 ):Parcelable

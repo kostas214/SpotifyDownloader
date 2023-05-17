@@ -4,21 +4,28 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.spotifydownloader.R
+import com.example.spotifydownloader.SharedViewModel
 import com.example.spotifydownloader.SpotifyApi.SpotifyApi
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_ID
 import com.example.spotifydownloader.SpotifyApi.util.Constants.Companion.CLIENT_SECRET
 import com.example.spotifydownloader.databinding.FragmentPlayListBinding
 import com.example.spotifydownloader.parcels.Data
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -28,7 +35,11 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
     private lateinit var binding: FragmentPlayListBinding
     private val tag = "MainActivity"
     private var  data: Intent? = null
+    private var folderUri: Uri? =null
     private lateinit var navController:NavController
+    private val sharedViewModel : SharedViewModel by activityViewModels()
+
+
 
 
 
@@ -41,11 +52,16 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
 
 
+
+
+
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // There are no request codes
                 data = result.data
                 if (data != null) {
+                    sharedViewModel.folderUri.value = data?.data
+
                     Log.d(tag,data?.data.toString())
                     Log.d(tag,(context as Activity).externalCacheDir.toString())
                 }
@@ -107,6 +123,15 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
 
 
+        sharedViewModel.playlistLink.observe(viewLifecycleOwner, Observer { playlistLink->
+            binding.PlaylistLinkEditTextPLF.setText(playlistLink)
+        })
+        sharedViewModel.folderUri.observe(viewLifecycleOwner, Observer { folderUri1->
+            folderUri = folderUri1
+        })
+
+
+
 
         //Main part (Download button)
         binding.downloadPLF.setOnClickListener {
@@ -126,7 +151,7 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
             lifecycleScope.launch(Dispatchers.IO) {
 
-                val spotifyApi = SpotifyApi(clientId = CLIENT_ID, clientSecret = CLIENT_SECRET)
+                val spotifyApi = sharedViewModel.spotifyApi
                 val playlistLink = binding.PlaylistLinkEditTextPLF.text.toString()
                 var successCode: Int
 
@@ -186,11 +211,11 @@ class playListFragment : Fragment(R.layout.fragment_play_list) {
 
 
 
-                if (isDeviceOnline(context as Activity)  && data !=null && successCode == 0) {
+                if (isDeviceOnline(context as Activity)  && folderUri !=null && successCode == 0) {
 
                     val data = Data(
                         concurrentDownloads =  radioButtonSelection(),
-                        folderURI = data!!.data,
+                        folderURI = folderUri,
                         authToken = spotifyApi.authToken!!,
                         songNames = songNames,
                         imgUrls= imgUrls,

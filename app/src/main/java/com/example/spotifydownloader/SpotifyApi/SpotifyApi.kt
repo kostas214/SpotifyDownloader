@@ -291,7 +291,7 @@ class SpotifyApi(private val clientId: String, private val clientSecret: String,
 
 
 
-    private fun extractId(link:String): ExtractIdResponse {
+    fun extractId(link:String): ExtractIdResponse {
         if (link.contains("/track/")) {
             val id = link.substringAfter("/track/").substringBefore("?")
             val data = ExtractIdResponse(id,"track")

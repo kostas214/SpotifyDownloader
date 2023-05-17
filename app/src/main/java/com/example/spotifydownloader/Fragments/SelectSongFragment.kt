@@ -85,7 +85,7 @@ class selectSongFragment : Fragment(R.layout.fragment_select_song) {
                     releaseDate = songData.album.release_date,
                     folderUri = args.ItemListData.folderUri
                 )
-                val action = selectSongFragmentDirections.actionSelectSongFragmentToSongDownloadFragment2(data)
+                val action = selectSongFragmentDirections.actionSelectSongFragmentToSongDownloadFragment(data)
                 navController.navigate(action)
 
 
