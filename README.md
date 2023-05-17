@@ -53,11 +53,11 @@ Supports: Playlist, Albums,Tracks.
  3. Preferably add the artist name in the second text box
  4. Press "Download button"
 
-<a href="https://github.com/kostas214/SpotifyDownloader/blob/main/Images/ChooseSong.jpg" align="center" height="556" width="259" ></a>
+<a href="https://github.com/kostas214/SpotifyDownloader"><img src="https://github.com/kostas214/SpotifyDownloader/blob/main/Images/ChooseSong.jpg" align="center" height="556" width="259" ></a>
 
 5. You will be transported to this screen where you need to click on the correct song from the list 
 
- <a href="https://github.com/kostas214/SpotifyDownloader/blob/main/Images/DownloadSingleSong.jpg" align="center" height="556" width="259" ></a>
+ <a href="https://github.com/kostas214/SpotifyDownloader"><img src="https://github.com/kostas214/SpotifyDownloader/blob/main/Images/DownloadSingleSong.jpg" align="center" height="556" width="259" ></a>
  
  6. Finally wait for the download to finish 
 
