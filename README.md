@@ -67,6 +67,7 @@ Supports: Playlist, Albums,Tracks.
  1. [youtubedl-android](https://github.com/yausername/youtubedl-android) wrapper library for [yt-dlp](https://github.com/yt-dlp/yt-dlp) making it possible to download the songs 
  2. [retrofit](https://github.com/square/retrofit) for making requests to the Spotify API
  3. [coil](https://github.com/coil-kt/coil) for setting images in the UI
+ 4. [mp3agic](https://github.com/mpatric/mp3agic) for inserting mp3 metadata
 ## Credits:
 1. <a href="https://www.flaticon.com/free-icons/spotify" title="app Icon">App icon</a>
 
